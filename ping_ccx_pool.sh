@@ -82,8 +82,8 @@ subDomainSwapper () {
 
 subDomainToSwap(){
 local sub=$(zenity --list --radiolist --height 320 --width 400 --title "Pick Subdomain for ${poolAndPort["$1",0]}" --timeout 15 --column "Select" --column "#" --column "SubDomain" $(subZenList $1))
-if [[ $1 -eq 3 ]] && [[ $sub -eq 1 ]]; then
 #FastPool Europe
+if [[ $1 -eq 3 ]] && [[ $sub -eq 1 ]]; then
 poolAndPort[3,00]=""
 else
 subDomainSwapper $1 $sub
