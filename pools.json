@@ -1,0 +1,36 @@
+{
+    "pools": [
+      {
+        "address": "pool.conceal.network",
+        "port": "3333"
+      },
+      {
+        "address": "conceal.cedric-crispin.com",
+        "port": "3364"
+      },
+      {
+        "address": "us.fastpool.xyz",
+        "port": "10167"
+      },
+      {
+        "address": "eu.fastpool.xyz",
+        "port": "10167"
+      },
+      {
+        "address": "sg.fastpool.xyz",
+        "port": "10167"
+      },
+      {
+        "address": "ccx.gntl.uk",
+        "port": "40012"
+      },
+      {
+        "address": "fr.conceal.miner.rocks",
+        "port": "30041"
+      },
+      {
+        "address": "pool.hashvault.pro",
+        "port": "3333"
+      }
+    ]
+  }
