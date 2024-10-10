@@ -197,3 +197,19 @@ endif()
 add_definitions(-DGIT_VERSION="${GIT_VERSION}")
 
 # ... rest of your CMake configuration ...
+
+# Copy pp.png to the bin directory
+set(PP_PNG_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/pp.png")
+set(PP_PNG_DESTINATION "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/pp.png")
+
+if(EXISTS ${PP_PNG_SOURCE})
+    add_custom_command(
+        TARGET PingCCXPool POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            ${PP_PNG_SOURCE}
+            ${PP_PNG_DESTINATION}
+        COMMENT "Copying pp.png to bin directory"
+    )
+else()
+    message(WARNING "pp.png not found in the source directory. Make sure it exists before running the application.")
+endif()

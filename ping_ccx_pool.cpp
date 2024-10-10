@@ -14,6 +14,9 @@
 #include <nlohmann/json.hpp>
 #include <regex>
 #include <algorithm>
+#include <wx/image.h>
+#include <wx/bitmap.h>
+#include <wx/statbmp.h>
 
 using json = nlohmann::json;
 
@@ -31,17 +34,43 @@ MainFrame::MainFrame(const wxString& title, const wxString& gitVersion)
     // Create a sizer for the panel
     wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
 
-    // Add the welcome banner
-    wxStaticText* welcomeText = new wxStaticText(panel, wxID_ANY, "Welcome to CCX Pool Ping Tester");
-    wxFont welcomeFont = welcomeText->GetFont();
-    welcomeFont.SetPointSize(welcomeFont.GetPointSize() + 4);
-    welcomeFont.SetWeight(wxFONTWEIGHT_BOLD);
-    welcomeText->SetFont(welcomeFont);
-    mainSizer->Add(welcomeText, 0, wxALIGN_CENTER | wxTOP | wxBOTTOM, 10);
+    // Create a horizontal sizer for the banner and image
+    wxBoxSizer* bannerSizer = new wxBoxSizer(wxHORIZONTAL);
+
+    // Add a spacer on the left to push the text to the center
+    bannerSizer->Add(0, 0, 1, wxEXPAND);
+
+    // Add the banner text
+    wxStaticText* bannerText = new wxStaticText(panel, wxID_ANY, "Ping CCX Pool");
+    wxFont bannerFont = bannerText->GetFont();
+    bannerFont.SetPointSize(bannerFont.GetPointSize() + 16 );
+    bannerFont.SetWeight(wxFONTWEIGHT_BOLD);
+    bannerText->SetFont(bannerFont);
+    bannerText->SetForegroundColour(wxColour(255, 125, 0));  // Set to red, adjust as needed
+    bannerSizer->Add(bannerText, 0, wxALIGN_CENTER_VERTICAL);
+
+    // Add a spacer on the right to balance the layout
+    bannerSizer->Add(0, 0, 1, wxEXPAND);
+
+    // Load and add the image
+    wxImage image;
+    if (image.LoadFile("pp.png", wxBITMAP_TYPE_PNG))
+    {
+        // Scale the image to desired size (e.g., 32x32)
+        image.Rescale(64, 64, wxIMAGE_QUALITY_HIGH);
+        wxBitmap bitmap(image);
+        m_logoImage = new wxStaticBitmap(panel, wxID_ANY, bitmap);
+        bannerSizer->Add(m_logoImage, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, 10);
+    }
+    //bannerSizer->Add(0, 0, 0.2, wxEXPAND);
+
+    // Add the banner sizer to the main sizer
+    mainSizer->Add(bannerSizer, 0, wxEXPAND | wxALL, 10);
 
     // Add the version information
     wxBoxSizer* versionSizer = new wxBoxSizer(wxHORIZONTAL);
-    wxStaticText* versionText = new wxStaticText(panel, wxID_ANY, wxString::Format("Version: %s", m_gitVersion));
+    wxString shortVersion = wxString(m_gitVersion).BeforeFirst('-');
+    wxStaticText* versionText = new wxStaticText(panel, wxID_ANY, wxString::Format("Version: %s", shortVersion));
     versionSizer->Add(0, 0, 1, wxEXPAND); // Add a spacer that can expand
     versionSizer->Add(versionText, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 5);
     mainSizer->Add(versionSizer, 0, wxEXPAND | wxBOTTOM, 5);
@@ -280,6 +309,7 @@ void MainFrame::SummarizeResults() {
 
 // MyApp implementation
 bool MyApp::OnInit() {
+    wxInitAllImageHandlers();
     MainFrame* frame = new MainFrame("Ping CCX Pool", GIT_VERSION);
     frame->Show(true);
     return true;

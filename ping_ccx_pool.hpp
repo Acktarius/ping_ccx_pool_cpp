@@ -7,6 +7,9 @@
 #include <map>
 #include <vector>
 #include <string>
+#include <wx/image.h>
+#include <wx/bitmap.h>
+#include <wx/statbmp.h>
 
 // Forward declarations
 class MainFrame;
@@ -42,6 +45,7 @@ private:
     wxCheckListBox* poolListBox;
     std::vector<PoolResult> poolResults;  // Add this line
     wxString m_gitVersion;  // Add this line to store the git version
+    wxStaticBitmap* m_logoImage;  // Add this line to store the logo image
 };
 
 // wxApp-derived class
