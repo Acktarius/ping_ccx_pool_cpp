@@ -56,7 +56,7 @@ declare -A poolAndPort=(
 [2,0]="cedric-crispin.com" [2,00]="conceal." [2,1]="3364" \
 [3,0]="fastpool.xyz" [3,00]="us." [3,01]="eu." [3,02]="sg." [3,1]="10167" \
 [4,0]="gntl.uk" [4,00]="ccx." [4,1]="40012" \
-[5,0]="conceal.herominers.com" [5,00]="us." [5,01]="au." [5,02]="de." [5,03]="fi." [5,04]="us2." [5,05]="ca." [5,06]="ru." [5,1]="1115" \
+[5,0]="conceal.miner.rocks" [5,00]="fr." [5,1]="30041" \
 [6,0]="hashvault.pro" [6,00]="pool." [6,1]="3333")
 #pool list fort zenity
 poolZen(){

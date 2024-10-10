@@ -21,21 +21,30 @@ using json = nlohmann::json;
 std::map<int, std::vector<std::string>> poolAndPort;
 
 // MainFrame implementation
-MainFrame::MainFrame() : wxFrame(nullptr, wxID_ANY, "CCX Ping Mining Pools", wxDefaultPosition, wxSize(1000, 800)) {
+MainFrame::MainFrame(const wxString& title, const wxString& gitVersion)
+    : wxFrame(nullptr, wxID_ANY, title), m_gitVersion(gitVersion) {
     InitializePoolData();
     
+    // Create a panel to hold our controls
     wxPanel* panel = new wxPanel(this);
+    
+    // Create a sizer for the panel
     wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
 
-    // Welcome banner
-    wxStaticText* welcomeBanner = new wxStaticText(panel, wxID_ANY, "Welcome to CCX Ping Mining Pools", 
-                                                   wxDefaultPosition, wxSize(900, -1), wxALIGN_CENTER_HORIZONTAL);
-    wxFont bannerFont = welcomeBanner->GetFont();
-    bannerFont.SetPointSize(28);
-    bannerFont.SetWeight(wxFONTWEIGHT_BOLD);
-    welcomeBanner->SetFont(bannerFont);
-    welcomeBanner->SetForegroundColour(wxColour(255, 124, 0));  
-    mainSizer->Add(welcomeBanner, 0, wxALIGN_CENTER | wxALL, 20);
+    // Add the welcome banner
+    wxStaticText* welcomeText = new wxStaticText(panel, wxID_ANY, "Welcome to CCX Pool Ping Tester");
+    wxFont welcomeFont = welcomeText->GetFont();
+    welcomeFont.SetPointSize(welcomeFont.GetPointSize() + 4);
+    welcomeFont.SetWeight(wxFONTWEIGHT_BOLD);
+    welcomeText->SetFont(welcomeFont);
+    mainSizer->Add(welcomeText, 0, wxALIGN_CENTER | wxTOP | wxBOTTOM, 10);
+
+    // Add the version information
+    wxBoxSizer* versionSizer = new wxBoxSizer(wxHORIZONTAL);
+    wxStaticText* versionText = new wxStaticText(panel, wxID_ANY, wxString::Format("Version: %s", m_gitVersion));
+    versionSizer->Add(0, 0, 1, wxEXPAND); // Add a spacer that can expand
+    versionSizer->Add(versionText, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 5);
+    mainSizer->Add(versionSizer, 0, wxEXPAND | wxBOTTOM, 5);
 
     // Pool selection list
     wxArrayString poolChoices;
@@ -55,6 +64,7 @@ MainFrame::MainFrame() : wxFrame(nullptr, wxID_ANY, "CCX Ping Mining Pools", wxD
     mainSizer->Add(resultTextCtrl, 1, wxEXPAND | wxALL, 10);
 
     panel->SetSizer(mainSizer);
+    mainSizer->Fit(this);
 
     wxBoxSizer* frameSizer = new wxBoxSizer(wxVERTICAL);
     frameSizer->Add(panel, 1, wxEXPAND);
@@ -270,7 +280,7 @@ void MainFrame::SummarizeResults() {
 
 // MyApp implementation
 bool MyApp::OnInit() {
-    MainFrame* frame = new MainFrame();
+    MainFrame* frame = new MainFrame("Ping CCX Pool", GIT_VERSION);
     frame->Show(true);
     return true;
 }

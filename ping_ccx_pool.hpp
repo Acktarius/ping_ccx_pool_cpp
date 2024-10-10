@@ -27,7 +27,8 @@ struct PoolResult {
 // MainFrame class
 class MainFrame : public wxFrame {
 public:
-    MainFrame();
+    // Update the constructor declaration to include GIT_VERSION
+    MainFrame(const wxString& title, const wxString& gitVersion);
     void CreateControls();
 
 private:
@@ -40,6 +41,7 @@ private:
     wxTextCtrl* resultTextCtrl;
     wxCheckListBox* poolListBox;
     std::vector<PoolResult> poolResults;  // Add this line
+    wxString m_gitVersion;  // Add this line to store the git version
 };
 
 // wxApp-derived class

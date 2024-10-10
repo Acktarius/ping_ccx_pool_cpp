@@ -150,3 +150,50 @@ if(EXISTS ${POOLS_JSON})
 else()
     message(WARNING "pools.json not found in the source directory. Make sure it exists before running the application.")
 endif()
+
+# Find Git
+find_package(Git)
+
+if(GIT_FOUND)
+  # Get the current working branch
+  execute_process(
+    COMMAND ${GIT_EXECUTABLE} rev-parse --abbrev-ref HEAD
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_VARIABLE GIT_BRANCH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
+
+  # Get the latest abbreviated commit hash of the working branch
+  execute_process(
+    COMMAND ${GIT_EXECUTABLE} log -1 --format=%h
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_VARIABLE GIT_COMMIT_HASH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
+else()
+  set(GIT_BRANCH "unknown")
+  set(GIT_COMMIT_HASH "unknown")
+endif()
+
+# Add the binary tree to the search path for include files
+include_directories(${CMAKE_BINARY_DIR}/generated)
+
+# ... existing CMake configuration ...
+
+find_package(Git QUIET)
+if(GIT_FOUND)
+  execute_process(
+    COMMAND ${GIT_EXECUTABLE} describe --tags --always --dirty
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    OUTPUT_VARIABLE GIT_VERSION
+    ERROR_QUIET
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
+else()
+  set(GIT_VERSION "unknown")
+endif()
+
+# Define the version as a preprocessor macro
+add_definitions(-DGIT_VERSION="${GIT_VERSION}")
+
+# ... rest of your CMake configuration ...
