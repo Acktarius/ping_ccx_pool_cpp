@@ -1,3 +1,0 @@
-/home/ccxbeelink/project_BashScript/ping_ccx_pool/build/CMakeFiles/CCXPoolPing.dir
-/home/ccxbeelink/project_BashScript/ping_ccx_pool/build/CMakeFiles/edit_cache.dir
-/home/ccxbeelink/project_BashScript/ping_ccx_pool/build/CMakeFiles/rebuild_cache.dir

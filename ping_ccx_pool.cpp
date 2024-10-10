@@ -21,7 +21,7 @@ void MainFrame::InitializePoolData() {
     poolAndPort[2] = {"cedric-crispin.com", "conceal.", "3364"};
     poolAndPort[3] = {"fastpool.xyz", "us.", "eu.", "sg.", "10167"};
     poolAndPort[4] = {"gntl.uk", "ccx.", "40012"};
-    poolAndPort[5] = {"conceal.herominers.com", "us.", "au.", "de.", "fi.", "us2.", "ca.", "ru.", "1115"};
+    poolAndPort[5] = {"conceal.miner.rocks", "fr.", "30041"};
     poolAndPort[6] = {"hashvault.pro", "pool.", "3333"};
 }
 
