@@ -7,14 +7,7 @@
 ## this script is delivered “as is” and I deny any and all liability for any damages arising out of using this script
 
 # UBUNTU
-## Dependencies
-
-- CMake 3.15 or higher
-- C++17 compliant compiler
-- wxWidgets 3.2 or higher
-- nlohmann/json library
-- OpenSSL library
-- nping (usually part of nmap)
+## Option 1 : Legacy Bash script
 
 ### Ubuntu Dependencies Installation
 
@@ -99,9 +92,10 @@ sudo chown -R $USER:$USER /opt/conceal-toolbox/ping_ccx_pool
 sudo chmod -R 755 /opt/conceal-toolbox/ping_ccx_pool
 ```
 
-Remember to adjust these instructions if your installation directory differs from the one specified above.
+---
 
-## Building from Source for the C++ version
+
+## Option 2 : Building from Source for the C++ version
 
 1. Clone the repository:
    ```bash

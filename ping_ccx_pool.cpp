@@ -13,6 +13,7 @@
 #include <fstream>
 #include <nlohmann/json.hpp>
 #include <regex>
+#include <string>
 #include <algorithm>
 #include <wx/image.h>
 #include <wx/bitmap.h>
@@ -101,12 +102,8 @@ void MainFrame::BindEvents() {
     }
 }
 
-PoolResult MainFrame::PerformNpingTest(const PoolInfo& poolInfo) {
-    wxString pool = poolInfo.address;
-    wxString port = poolInfo.port;
-    
-    wxString result;
-    double avgRtt = -1.0;  // Default value if we can't parse the result
+std::vector<PoolResult> MainFrame::PerformNpingTest(const std::vector<int>& poolIndices) {
+    std::vector<PoolResult> results;
     
     // Create a temporary script to run all nping commands
     wxString tempDir = wxStandardPaths::Get().GetTempDir();
@@ -117,8 +114,12 @@ PoolResult MainFrame::PerformNpingTest(const PoolInfo& poolInfo) {
         file.Create();
         file.AddLine("#!/bin/bash");
         
-        file.AddLine(wxString::Format("nping --tcp-connect -p %s -c 1 %s", port, pool));
-        file.AddLine("echo '----------------------------------------'");
+        for (int index : poolIndices) {
+            const PoolInfo& poolInfo = poolsAndPorts[index];
+            file.AddLine(wxString::Format("echo 'Testing pool: %s:%s'", poolInfo.address, poolInfo.port));
+            file.AddLine(wxString::Format("nping --tcp-connect -p %s -c 4 %s", poolInfo.port, poolInfo.address));
+            file.AddLine("echo '----------------------------------------'");
+        }
         
         file.Write();
         file.Close();
@@ -134,28 +135,47 @@ PoolResult MainFrame::PerformNpingTest(const PoolInfo& poolInfo) {
     long exitCode = wxExecute(command, output, errors, wxEXEC_SYNC);
     
     if (exitCode == 0) {
+        std::regex pool_regex("Testing pool: ([^:]+):(.+)");
+        std::regex rtt_regex("Avg rtt: (\\d+\\.\\d+)ms");
+        std::smatch match;
+        PoolInfo currentPool;
+        double currentRtt = -1.0;
+
         for (const auto& line : output) {
-            result += line + "\n";
-            
-            // Parse the Avg rtt
-            std::regex rtt_regex("Avg rtt: (\\d+\\.\\d+)ms");
-            std::smatch match;
             std::string line_str = line.ToStdString();
-            if (std::regex_search(line_str, match, rtt_regex)) {
-                avgRtt = std::stod(match[1]);
+            
+            if (std::regex_search(line_str, match, pool_regex)) {
+                // New pool test starting, save previous result if any
+                if (!currentPool.address.empty() && currentRtt != -1.0) {
+                    results.emplace_back(currentPool.address, currentPool.port, currentRtt);
+                }
+                // Set new pool info
+                currentPool.address = match[1];
+                currentPool.port = match[2];
+                currentRtt = -1.0;
+            } else if (std::regex_search(line_str, match, rtt_regex)) {
+                currentRtt = std::stod(match[1]);
+                // Immediately save the result for this pool
+                if (!currentPool.address.empty()) {
+                    results.emplace_back(currentPool.address, currentPool.port, currentRtt);
+                    // Reset for next pool
+                    currentPool = PoolInfo();
+                    currentRtt = -1.0;
+                }
             }
         }
     } else {
-        result += "Error executing nping tests:\n";
+        wxString errorMsg = "Error executing nping tests:\n";
         for (const auto& error : errors) {
-            result += error + "\n";
+            errorMsg += error + "\n";
         }
+        throw std::runtime_error(errorMsg.ToStdString());
     }
     
     // Clean up the temporary script
     wxRemoveFile(scriptPath);
     
-    return PoolResult(poolInfo.address, poolInfo.port, avgRtt);
+    return results;
 }
 
 void MainFrame::OnStartTest(wxCommandEvent& event) {
@@ -165,33 +185,34 @@ void MainFrame::OnStartTest(wxCommandEvent& event) {
     poolResults.clear();
     resultTextCtrl->Clear();
 
-    // Iterate through all items in the listbox
+    std::vector<int> checkedPoolIndices;
+
+    // Collect indices of checked pools
     for (unsigned int i = 0; i < poolListBox->GetCount(); ++i) {
-        if (poolListBox->IsChecked(i)) {
-            std::cout << "Processing checked item " << i << std::endl;
-
-            if (i < poolsAndPorts.size()) {
-                const PoolInfo& pool = poolsAndPorts[i];
-                wxString poolAddress = pool.address;
-                resultTextCtrl->AppendText(wxString::Format("Testing pool: %s\n", poolAddress));
-                
-                std::cout << "Testing pool: " << poolAddress << std::endl;
-
-                try {
-                    PoolResult result = PerformNpingTest(pool);
-                    poolResults.push_back(result);
-                    resultTextCtrl->AppendText(wxString::Format("Avg RTT: %.2f ms\n\n", result.avgRtt));
-                } catch (const std::exception& e) {
-                    wxString errorMsg = wxString::Format("Exception occurred: %s\n", e.what());
-                    std::cout << errorMsg << std::endl;
-                    resultTextCtrl->AppendText(errorMsg);
-                }
-            } else {
-                wxString errorMsg = wxString::Format("Invalid pool index: %d\n", i);
-                std::cout << errorMsg << std::endl;
-                resultTextCtrl->AppendText(errorMsg);
-            }
+        if (poolListBox->IsChecked(i) && i < poolsAndPorts.size()) {
+            checkedPoolIndices.push_back(i);
+            wxString poolAddress = poolsAndPorts[i].address;
+            resultTextCtrl->AppendText(wxString::Format("Will test pool: %s\n", poolAddress));
         }
+    }
+
+    if (checkedPoolIndices.empty()) {
+        resultTextCtrl->AppendText("No pools selected for testing.\n");
+        return;
+    }
+
+    try {
+        std::vector<PoolResult> results = PerformNpingTest(checkedPoolIndices);
+        for (const auto& result : results) {
+            poolResults.push_back(result);
+            resultTextCtrl->AppendText(wxString::Format("Pool: %s:%s, Avg RTT: %.2f ms\n\n", 
+                                                        result.address, result.port, result.avgRtt));
+            
+        }
+    } catch (const std::exception& e) {
+        wxString errorMsg = wxString::Format("Exception occurred: %s\n", e.what());
+        std::cout << errorMsg << std::endl;
+        resultTextCtrl->AppendText(errorMsg);
     }
 
     SummarizeResults();
@@ -209,7 +230,7 @@ void MainFrame::SummarizeResults() {
     std::sort(poolResults.begin(), poolResults.end(), 
               [](const PoolResult& a, const PoolResult& b) { return a.avgRtt < b.avgRtt; });
 
-    resultTextCtrl->AppendText("\n--- Summary of Results (Sorted by Average RTT) ---\n");
+    resultTextCtrl->AppendText("\n--- Summary of Results (Sorted by Average RTT) ---\n\n");
     for (const auto& result : poolResults) {
         resultTextCtrl->AppendText(wxString::Format("%s:%s - Avg RTT: %.2f ms\n", 
                                                     result.address, result.port, result.avgRtt));

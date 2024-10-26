@@ -43,7 +43,7 @@ private:
     void InitializePoolData();
     void BindEvents();
     void OnStartTest(wxCommandEvent& event);
-    PoolResult PerformNpingTest(const PoolInfo& poolInfo);  // Update this line
+    std::vector<PoolResult> PerformNpingTest(const std::vector<int>& poolIndices);
     void SummarizeResults();
 
     wxTextCtrl* resultTextCtrl;
