@@ -14,6 +14,10 @@ You are an AI expert in the field of cryptocurrency mining. You are tasked with 
 - RAII for resource management
 - STL for data structures and algorithms
 - Custom memory pools for mining-specific optimizations
+- Always include header guards
+- Do not define variables and functions in header files 
+- Give a header file the same name as the source file it's associated with
+- Each header file should have a specific job, and be as independent as possible
 
 ### OpenCL Implementation
 - Efficient kernel design for maximum hash rate
@@ -27,10 +31,84 @@ You are an AI expert in the field of cryptocurrency mining. You are tasked with 
 - Cross-platform build configuration
 - GPU architecture-specific optimizations
 
-Example targets:
+Here's an expanded CMake configuration:
+
 ```cmake
-add_executable(miner src/main.cpp)
-target_link_libraries(miner PRIVATE OpenCL)
+cmake_minimum_required(VERSION 3.15)
+project(CryptoMiner VERSION 1.0.0 LANGUAGES CXX)
+
+# Set C++ standard
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Find OpenCL package
+find_package(OpenCL REQUIRED)
+
+# Find wxWidgets package for GUI
+find_package(wxWidgets REQUIRED COMPONENTS core base)
+include(${wxWidgets_USE_FILE})
+
+# Add OpenCL include directories
+include_directories(${OpenCL_INCLUDE_DIRS})
+
+# Define source files
+set(SOURCES
+    src/main.cpp
+    src/miner.cpp
+    src/gui.cpp
+    src/opencl_wrapper.cpp
+)
+
+# Define header files
+set(HEADERS
+    include/miner.h
+    include/gui.h
+    include/opencl_wrapper.h
+)
+
+# Create executable
+add_executable(miner ${SOURCES} ${HEADERS})
+
+# Link libraries
+target_link_libraries(miner PRIVATE 
+    OpenCL::OpenCL
+    ${wxWidgets_LIBRARIES}
+)
+
+# Include directories
+target_include_directories(miner PRIVATE 
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+# Add compile definitions for different mining algorithms
+target_compile_definitions(miner PRIVATE
+    $<$<CONFIG:Debug>:DEBUG>
+    $<$<BOOL:${USE_SHA256}>:USE_SHA256>
+    $<$<BOOL:${USE_CRYPTONIGHT}>:USE_CRYPTONIGHT>
+)
+
+# Set optimization flags for Release build
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+    target_compile_options(miner PRIVATE -O3 -march=native)
+endif()
+
+# Install rules
+install(TARGETS miner DESTINATION bin)
+install(FILES ${HEADERS} DESTINATION include)
+
+# Testing
+enable_testing()
+add_subdirectory(tests)
+
+# Package generation
+include(CPack)
+```
+
+Example usage:
+```bash
+mkdir build && cd build
+cmake -DCMAKE_BUILD_TYPE=Release -DUSE_SHA256=ON ..
+cmake --build .
 ```
 
 ### Performance Optimization
@@ -51,19 +129,6 @@ target_link_libraries(miner PRIVATE OpenCL)
 - Mining pool integration libraries
 - Hardware monitoring capabilities
 - wxWidgets 3.2 or higher (for GUI)
-
-## Build Configuration
-- CMakeLists.txt structure for multi-platform support
-- Find modules for OpenCL and other dependencies
-- Conditional compilation for different mining algorithms
-- Debug and Release build configurations
-
-Example usage:
-```bash
-mkdir build && cd build
-cmake -DCMAKE_BUILD_TYPE=Release ..
-cmake --build .
-```
 
 ## Code Quality
 - Clear, maintainable code with mining-specific comments

@@ -58,11 +58,13 @@ include(${wxWidgets_USE_FILE})
 # Add source files
 set(SOURCES
     ping_ccx_pool.cpp
+    mainFrame.cpp
 )
 
 # Add header files
 set(HEADERS
     ping_ccx_pool.hpp
+    mainFrame.hpp
 )
 
 # Create executable
