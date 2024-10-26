@@ -100,7 +100,7 @@ sudo chmod -R 755 /opt/conceal-toolbox/ping_ccx_pool
 1. Clone the repository:
    ```bash
    git clone https://github.com/Acktarius/ping_ccx_pool_cpp.git
-   cd ping-ccx-pool
+   cd ping_ccx_pool_cpp
    ```
 
 2. Create a build directory:
@@ -110,7 +110,7 @@ sudo chmod -R 755 /opt/conceal-toolbox/ping_ccx_pool
 
 3. Configure the project with CMake:
    ```bash
-   cmake -DCMAKE_INSTALL_PREFIX=$HOME/.local -B build
+   cmake ..
    ```
    
    Alternatively, to automatically copy the policy file to /usr/share/polkit-1/actions/:
@@ -131,14 +131,14 @@ sudo chmod -R 755 /opt/conceal-toolbox/ping_ccx_pool
 
    After installation, you may need to adjust the permissions of the desktop shortcut:
    ```bash
-   chmod 755 ~/Desktop/ping_ccx_pool.desktop
+   chmod 755 ~/Desktop/PingCCXPool.desktop
    ```
 
 ## Manual Policy File Installation
 
-If you didn't use the `-DINSTALL_POLKIT_POLICY=ON` option with CMake, you need to manually copy the policy file:
+If you didn't use the `-DINSTALL_POLKIT_POLICY=ON` option with CMake, you need to manually copy the policy file in /usr/share/polkit-1/actions/  
 
 ```
 ## Running the Application
 
-After building, you can run the application from the build directory
+After building, you can run the application from the build directory or icon on desktop if you created the shortcut
