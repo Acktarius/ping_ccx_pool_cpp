@@ -9,14 +9,20 @@
 #include <wx/statbmp.h>
 #include <vector>
 
-
 // Forward declarations
 class MainFrame;
 
-// Global variables (consider making these member variables in a class later)
-extern std::map<int, std::vector<std::string>> poolAndPort;
+// Define the PoolInfo struct
+struct PoolInfo {
+    int id;
+    std::string address;
+    std::string port;
+};
 
-// Add the PoolResult struct
+// Replace the global variable with the new vector
+extern std::vector<PoolInfo> poolsAndPorts;
+
+// Update the PoolResult struct if necessary
 struct PoolResult {
     std::string address;
     std::string port;
@@ -37,12 +43,12 @@ private:
     void InitializePoolData();
     void BindEvents();
     void OnStartTest(wxCommandEvent& event);
-    PoolResult PerformNpingTest(const std::vector<std::string>& poolInfo);  // Updated return type
-    void SummarizeResults();  // Add this line
+    PoolResult PerformNpingTest(const PoolInfo& poolInfo);  // Update this line
+    void SummarizeResults();
 
     wxTextCtrl* resultTextCtrl;
     wxCheckListBox* poolListBox;
-    std::vector<PoolResult> poolResults;  // Add this line
-    wxString m_gitVersion;  // Add this line to store the git version
-    wxStaticBitmap* m_logoImage;  // Add this line to store the logo image
+    std::vector<PoolResult> poolResults;
+    wxString m_gitVersion;
+    wxStaticBitmap* m_logoImage;
 };

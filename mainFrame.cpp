@@ -12,11 +12,8 @@
 #include <wx/image.h>
 #include <wx/bitmap.h>
 #include <wx/statbmp.h>
+#include <nlohmann/json.hpp>
 
-
-
-// Global variables (consider making these member variables in a class later)
-std::map<int, std::vector<std::string>> poolAndPort;
 
 // MainFrame implementation
 MainFrame::MainFrame(const wxString& title, const wxString& gitVersion)
@@ -72,8 +69,8 @@ MainFrame::MainFrame(const wxString& title, const wxString& gitVersion)
 
     // Pool selection list
     wxArrayString poolChoices;
-    for (const auto& pool : poolAndPort) {
-        wxString poolAddress = pool.second[0];
+    for (const auto& pool : poolsAndPorts) {
+        wxString poolAddress = pool.address;
         poolChoices.Add(poolAddress);
     }
     poolListBox = new wxCheckListBox(panel, wxID_ANY, wxDefaultPosition, wxSize(900, 200), poolChoices);

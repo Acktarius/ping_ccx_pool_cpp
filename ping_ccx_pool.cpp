@@ -1,4 +1,3 @@
-#include"mainFrame.hpp"
 #include "ping_ccx_pool.hpp"
 #include <cstdlib>
 #include <iostream>
@@ -18,12 +17,18 @@
 #include <wx/image.h>
 #include <wx/bitmap.h>
 #include <wx/statbmp.h>
+#include "mainFrame.hpp"
+// Include other necessary headers
+
+// Define the global vector
+std::vector<PoolInfo> poolsAndPorts;
 
 using json = nlohmann::json;
 
 
 
 void MainFrame::InitializePoolData() {
+    poolsAndPorts.clear();
     const wxString jsonFilePath = "pools.json";
     std::ifstream file(jsonFilePath.ToStdString());
     if (!file.is_open()) {
@@ -48,8 +53,8 @@ void MainFrame::InitializePoolData() {
         return;
     }
 
-    poolAndPort.clear();
-    int index = 1;
+    poolsAndPorts.clear();
+    int index = 0;
     for (const auto& pool : poolsJson["pools"]) {
         try {
             if (!pool.contains("address") || !pool.contains("port")) {
@@ -66,8 +71,8 @@ void MainFrame::InitializePoolData() {
                 wxMessageBox(errorMsg, "Data Error", wxOK | wxICON_ERROR);
                 return;
             }
-
-            poolAndPort[index++] = {address, port};
+            poolsAndPorts.push_back({index, address, port});
+            index++;
         } catch (json::type_error& e) {
             wxString errorMsg = wxString::Format("Type error in pool entry %d: %s", index, e.what());
             wxMessageBox(errorMsg, "JSON Type Error", wxOK | wxICON_ERROR);
@@ -96,7 +101,10 @@ void MainFrame::BindEvents() {
     }
 }
 
-PoolResult MainFrame::PerformNpingTest(const std::vector<std::string>& poolInfo) {
+PoolResult MainFrame::PerformNpingTest(const PoolInfo& poolInfo) {
+    wxString pool = poolInfo.address;
+    wxString port = poolInfo.port;
+    
     wxString result;
     double avgRtt = -1.0;  // Default value if we can't parse the result
     
@@ -108,9 +116,6 @@ PoolResult MainFrame::PerformNpingTest(const std::vector<std::string>& poolInfo)
         wxTextFile file(scriptPath);
         file.Create();
         file.AddLine("#!/bin/bash");
-        
-        wxString pool = poolInfo[0];
-        wxString port = poolInfo[1];
         
         file.AddLine(wxString::Format("nping --tcp-connect -p %s -c 1 %s", port, pool));
         file.AddLine("echo '----------------------------------------'");
@@ -150,40 +155,30 @@ PoolResult MainFrame::PerformNpingTest(const std::vector<std::string>& poolInfo)
     // Clean up the temporary script
     wxRemoveFile(scriptPath);
     
-    return PoolResult(poolInfo[0], poolInfo[1], avgRtt);
+    return PoolResult(poolInfo.address, poolInfo.port, avgRtt);
 }
 
-void MainFrame::OnStartTest(wxCommandEvent& WXUNUSED(event)) {
+void MainFrame::OnStartTest(wxCommandEvent& event) {
+    (void)event;  // Suppress unused parameter warning
+    
+    // Clear previous results
+    poolResults.clear();
     resultTextCtrl->Clear();
-    resultTextCtrl->AppendText("Test started...\n");
-    poolResults.clear();  // Clear previous results
 
-    std::cout << "OnStartTest function called" << std::endl;
+    // Iterate through all items in the listbox
+    for (unsigned int i = 0; i < poolListBox->GetCount(); ++i) {
+        if (poolListBox->IsChecked(i)) {
+            std::cout << "Processing checked item " << i << std::endl;
 
-    wxArrayInt checkedItems;
-    poolListBox->GetCheckedItems(checkedItems);
-
-    if (checkedItems.IsEmpty()) {
-        resultTextCtrl->AppendText("Please select at least one pool to test.\n");
-        std::cout << "No pools selected for testing" << std::endl;
-        return;
-    }
-
-    std::cout << "Number of pools selected: " << checkedItems.GetCount() << std::endl;
-
-    for (int index : checkedItems) {
-        wxString poolAddress = poolListBox->GetString(index);
-        resultTextCtrl->AppendText(wxString::Format("Testing pool: %s\n", poolAddress));
-        
-        std::cout << "Testing pool: " << poolAddress << std::endl;
-
-        bool poolFound = false;
-        for (const auto& pool : poolAndPort) {
-            if (pool.second[0] == poolAddress) {
-                std::cout << "Pool info found. Performing nping test..." << std::endl;
+            if (i < poolsAndPorts.size()) {
+                const PoolInfo& pool = poolsAndPorts[i];
+                wxString poolAddress = pool.address;
+                resultTextCtrl->AppendText(wxString::Format("Testing pool: %s\n", poolAddress));
+                
+                std::cout << "Testing pool: " << poolAddress << std::endl;
 
                 try {
-                    PoolResult result = PerformNpingTest(pool.second);
+                    PoolResult result = PerformNpingTest(pool);
                     poolResults.push_back(result);
                     resultTextCtrl->AppendText(wxString::Format("Avg RTT: %.2f ms\n\n", result.avgRtt));
                 } catch (const std::exception& e) {
@@ -191,15 +186,11 @@ void MainFrame::OnStartTest(wxCommandEvent& WXUNUSED(event)) {
                     std::cout << errorMsg << std::endl;
                     resultTextCtrl->AppendText(errorMsg);
                 }
-
-                poolFound = true;
-                break;
+            } else {
+                wxString errorMsg = wxString::Format("Invalid pool index: %d\n", i);
+                std::cout << errorMsg << std::endl;
+                resultTextCtrl->AppendText(errorMsg);
             }
-        }
-
-        if (!poolFound) {
-            std::cout << "Pool info not found for: " << poolAddress << std::endl;
-            resultTextCtrl->AppendText(wxString::Format("Error: Pool info not found for %s\n", poolAddress));
         }
     }
 
