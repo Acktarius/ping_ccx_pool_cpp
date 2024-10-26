@@ -138,7 +138,7 @@ sudo chmod -R 755 /opt/conceal-toolbox/ping_ccx_pool
 
 If you didn't use the `-DINSTALL_POLKIT_POLICY=ON` option with CMake, you need to manually copy the policy file in /usr/share/polkit-1/actions/  
 
-```
+
 ## Running the Application
 
 After building, you can run the application from the build directory or icon on desktop if you created the shortcut
