@@ -1,5 +1,35 @@
-cmake_minimum_required(VERSION 3.10)
-project(PingCCXPool)
+cmake_minimum_required(VERSION 3.0)
+
+# Find Git
+find_package(Git QUIET)
+
+if(GIT_FOUND)
+  # Retrieve the latest tag
+  execute_process(
+    COMMAND ${GIT_EXECUTABLE} describe --tags --abbrev=0
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_VARIABLE GIT_TAG
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    ERROR_QUIET
+  )
+
+  # If a tag was found, use it as the version
+  if(GIT_TAG)
+    set(VERSION ${GIT_TAG})
+  else()
+    # Fallback version if no tag is found
+    set(VERSION "0.0.0")
+  endif()
+else()
+  # Fallback version if Git is not found
+  set(VERSION "0.0.0")
+endif()
+
+# Set the project version
+project(PingCCXPool VERSION ${VERSION})
+
+# Output the version for verification
+message(STATUS "Project version: ${PROJECT_VERSION}")
 
 # Add option to auto-install nlohmann/json
 option(AUTO_INSTALL_NLOHMANN_JSON "Automatically install nlohmann/json if not found" ON)
@@ -88,8 +118,8 @@ else()
     target_compile_options(PingCCXPool PRIVATE -Wall -Wextra -pedantic)
 endif()
 
-# Custom command to clean up after build
-add_custom_command(TARGET PingCCXPool POST_BUILD
+# Custom target for cleanup
+add_custom_target(cleanup
     COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_BINARY_DIR}/CMakeFiles
     COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_BINARY_DIR}/CMakeCache.txt
     COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_BINARY_DIR}/cmake_install.cmake
@@ -215,3 +245,56 @@ if(EXISTS ${PP_PNG_SOURCE})
 else()
     message(WARNING "pp.png not found in the source directory. Make sure it exists before running the application.")
 endif()
+
+# Installation
+include(GNUInstallDirs)
+
+# Generate .desktop file content
+file(WRITE ${CMAKE_BINARY_DIR}/${PROJECT_NAME}.desktop
+"[Desktop Entry]
+Version=${PROJECT_VERSION}
+Type=Application
+Name=${PROJECT_NAME}
+Comment=Application to ping CCX pools (v${PROJECT_VERSION})
+Path=${CMAKE_BINARY_DIR}/bin/
+Exec=${CMAKE_BINARY_DIR}/bin/${PROJECT_NAME}
+Icon=$ENV{HOME}/.local/share/icons/hicolor/128x128/apps/${PROJECT_NAME}.png
+Terminal=false
+Categories=Utility;Network;
+")
+
+# Install desktop file to user's local applications directory
+install(CODE "
+    file(MAKE_DIRECTORY $ENV{HOME}/.local/share/applications)
+    file(COPY ${CMAKE_BINARY_DIR}/${PROJECT_NAME}.desktop 
+         DESTINATION $ENV{HOME}/.local/share/applications)
+")
+
+# Install icon to user's local icon directory
+install(CODE "
+    file(MAKE_DIRECTORY $ENV{HOME}/.local/share/icons/hicolor/128x128/apps)
+    file(COPY ${CMAKE_SOURCE_DIR}/pp.png 
+         DESTINATION $ENV{HOME}/.local/share/icons/hicolor/128x128/apps)
+    file(RENAME 
+         $ENV{HOME}/.local/share/icons/hicolor/128x128/apps/pp.png
+         $ENV{HOME}/.local/share/icons/hicolor/128x128/apps/${PROJECT_NAME}.png)
+")
+
+# Create symlink in ~/.local/bin
+install(CODE "
+    file(MAKE_DIRECTORY $ENV{HOME}/.local/bin)
+    execute_process(
+        COMMAND ${CMAKE_COMMAND} -E create_symlink 
+        ${CMAKE_BINARY_DIR}/bin/${PROJECT_NAME}
+        $ENV{HOME}/.local/bin/${PROJECT_NAME}
+    )
+")
+
+# Create symlink on Desktop
+install(CODE "
+    execute_process(
+        COMMAND ${CMAKE_COMMAND} -E create_symlink 
+        $ENV{HOME}/.local/share/applications/${PROJECT_NAME}.desktop
+        $ENV{HOME}/Desktop/${PROJECT_NAME}.desktop
+    )
+")

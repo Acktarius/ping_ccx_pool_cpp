@@ -105,12 +105,12 @@ sudo chmod -R 755 /opt/conceal-toolbox/ping_ccx_pool
 
 2. Create a build directory:
    ```bash
-   mkdir build && cd build
+   mkdir build  && cd build
    ```
 
 3. Configure the project with CMake:
    ```bash
-   cmake ..
+   cmake -DCMAKE_INSTALL_PREFIX=$HOME/.local -B build
    ```
    
    Alternatively, to automatically copy the policy file to /usr/share/polkit-1/actions/:
@@ -123,9 +123,15 @@ sudo chmod -R 755 /opt/conceal-toolbox/ping_ccx_pool
    cmake --build .
    ```
 
-5. (Optional) Install the application:
+5. Create a shortcut to the binary:
    ```bash
-   sudo cmake --install .
+  cmake --install .
+   ```
+
+
+   After installation, you may need to adjust the permissions of the desktop shortcut:
+   ```bash
+   chmod 755 ~/Desktop/ping_ccx_pool.desktop
    ```
 
 ## Manual Policy File Installation
