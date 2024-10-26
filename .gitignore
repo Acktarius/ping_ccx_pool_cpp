@@ -2,3 +2,5 @@
 .cursorrules
 ri.sh
 ./build
+create_appimage.sh
+linuxdeploy*

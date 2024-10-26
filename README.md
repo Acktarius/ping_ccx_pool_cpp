@@ -99,7 +99,7 @@ sudo chmod -R 755 /opt/conceal-toolbox/ping_ccx_pool
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/acktarius/ping-ccx-pool.git
+   git clone https://github.com/Acktarius/ping_ccx_pool_cpp.git
    cd ping-ccx-pool
    ```
 
