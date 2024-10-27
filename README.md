@@ -95,7 +95,13 @@ sudo chmod -R 755 /opt/conceal-toolbox/ping_ccx_pool
 ---
 
 
-## Option 2 : Building from Source for the C++ version
+## Option 2 : Building from Source the C++ version for Ubuntu/Debian users  
+
+0. Dependencies:
+   ```
+   sudo apt update
+   sudo apt install build-essential cmake libwxgtk3.0-gtk3-dev git nlohmann-json3-dev
+   ```
 
 1. Clone the repository:
    ```bash
@@ -105,7 +111,7 @@ sudo chmod -R 755 /opt/conceal-toolbox/ping_ccx_pool
 
 2. Create a build directory:
    ```bash
-   mkdir build  && cd build
+   mkdir build && cd build
    ```
 
 3. Configure the project with CMake:
@@ -125,7 +131,7 @@ sudo chmod -R 755 /opt/conceal-toolbox/ping_ccx_pool
 
 5. Create a shortcut to the binary:
    ```bash
-  cmake --install .
+   cmake --install .
    ```
 
 
@@ -141,4 +147,4 @@ If you didn't use the `-DINSTALL_POLKIT_POLICY=ON` option with CMake, you need t
 
 ## Running the Application
 
-After building, you can run the application from the build directory or icon on desktop if you created the shortcut
+After building, you can run the application from the build directory or icon on desktop if you created the shortcut with `cmake --install .`
