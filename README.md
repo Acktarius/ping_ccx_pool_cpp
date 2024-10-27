@@ -6,7 +6,7 @@
 
 ## this script is delivered “as is” and I deny any and all liability for any damages arising out of using this script
 
-# UBUNTU
+# UBUNTU / DEBIAN
 ## Option 1 : Legacy Bash script
 
 ### Ubuntu Dependencies Installation
@@ -18,7 +18,7 @@ zenity is ussually install on Ubuntu, nevertheless if you want to try this scrip
 `sudo apt install zenity`
 
 
-# Install
+### Install
 ideally place in the /opt folder, for CCX-BOX user : /opt/conceal-toolbox/ping_ccx_pool/
 
 `cd /opt/conceal-toolbox`
@@ -29,14 +29,14 @@ ideally place in the /opt folder, for CCX-BOX user : /opt/conceal-toolbox/ping_c
 
 `sudo chmod 755 ping_ccx_pool.sh`
 
-# Running the Application
+### Running the Application
 
-## Launch in terminal 
+#### Launch in terminal 
 `cd /opt/conceal-toolbox/ping_ccx_pool`
 
 `sudo ./ping_ccx_pool.sh`
 
-## Create a Desktop Shortcut
+#### Create a Desktop Shortcut
 
 1. Copy the icon file:
    ```bash
@@ -79,7 +79,7 @@ Now you should see the "CCX Ping Pool" shortcut in your applications menu. You c
 
 Note: When you click the shortcut, you may be prompted for your sudo password due to the use of sudo in the Exec line.
 
-# Troubleshooting
+### Troubleshooting
 
 If the shortcut doesn't appear immediately:
 - Log out and log back in, or
@@ -97,34 +97,34 @@ sudo chmod -R 755 /opt/conceal-toolbox/ping_ccx_pool
 
 ## Option 2 : Building from Source the C++ version for Ubuntu/Debian users  
 
-0. Dependencies:
+1. Dependencies:
    ```
    sudo apt update
    sudo apt install build-essential cmake libwxgtk3.0-gtk3-dev git nlohmann-json3-dev
    ```
 
-1. Clone the repository:
+2. Clone the repository:
    ```bash
    git clone https://github.com/Acktarius/ping_ccx_pool_cpp.git
    cd ping_ccx_pool_cpp
    ```
 
-2. Create a build directory:
+3. Create a build directory:
    ```bash
    mkdir build && cd build
    ```
 
-3. Configure the project with CMake:
+4. Configure the project with CMake:
    ```bash
    cmake ..
    ```
    
-   Alternatively, to automatically copy the policy file to /usr/share/polkit-1/actions/:
-   ```bash
-   cmake -DINSTALL_POLKIT_POLICY=ON ..
-   ```
+   *   Alternatively, to automatically copy the policy file to /usr/share/polkit-1/actions/:
+      ```bash
+      cmake -DINSTALL_POLKIT_POLICY=ON ..
+      ```
 
-4. Build the project:
+5. Build the project:
    ```bash
    cmake --build .
    ```
@@ -142,7 +142,7 @@ sudo chmod -R 755 /opt/conceal-toolbox/ping_ccx_pool
 
 ## Manual Policy File Installation
 
-If you didn't use the `-DINSTALL_POLKIT_POLICY=ON` option with CMake, you need to manually copy the policy file in /usr/share/polkit-1/actions/  
+If you didn't use the `-DINSTALL_POLKIT_POLICY=ON` option with CMake, you need to manually copy the policy file `org.acktarius.nping.policy` in `/usr/share/polkit-1/actions/`
 
 
 ## Running the Application
