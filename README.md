@@ -100,7 +100,7 @@ sudo chmod -R 755 /opt/conceal-toolbox/ping_ccx_pool
 1. Dependencies:
    ```
    sudo apt update
-   sudo apt install build-essential cmake libwxgtk3.0-gtk3-dev git nlohmann-json3-dev
+   sudo apt install build-essential cmake libwxgtk3.0-gtk3-dev git nlohmann-json3-dev nmap
    ```
 
 2. Clone the repository:
