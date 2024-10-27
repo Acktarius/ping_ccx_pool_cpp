@@ -18,6 +18,7 @@
 // MainFrame implementation
 MainFrame::MainFrame(const wxString& title, const wxString& gitVersion)
     : wxFrame(nullptr, wxID_ANY, title), m_gitVersion(gitVersion) {
+
     InitializePoolData();
     
     // Create a panel to hold our controls
@@ -84,6 +85,25 @@ MainFrame::MainFrame(const wxString& title, const wxString& gitVersion)
     resultTextCtrl = new wxTextCtrl(panel, wxID_ANY, "", wxDefaultPosition, wxSize(900, 300), wxTE_MULTILINE | wxTE_READONLY);
     mainSizer->Add(resultTextCtrl, 1, wxEXPAND | wxALL, 10);
 
+    // Get the current year
+    auto now = std::chrono::system_clock::now();
+    std::time_t currentTime = std::chrono::system_clock::to_time_t(now);
+    std::tm* localTime = std::localtime(&currentTime);
+    int currentYear = localTime->tm_year + 1900;  // tm_year is years since 1900
+   // Create the copyright text with the current year
+    wxString copyrightString = wxString::Format("%d - Acktarius - All rights reserved.", currentYear);
+    // Add footer with copyright
+    wxBoxSizer* footerSizer = new wxBoxSizer(wxHORIZONTAL);
+    wxStaticText* copyrightText = new wxStaticText(panel, wxID_ANY, copyrightString);
+    wxFont footerFont = copyrightText->GetFont();
+    footerFont.SetPointSize(footerFont.GetPointSize() + 2);  // Slightly larger font
+    copyrightText->SetFont(footerFont);
+    copyrightText->SetForegroundColour(wxColour(255, 125, 0));  // Orange color
+    footerSizer->Add(copyrightText, 1, wxALIGN_CENTER | wxALL, 5);
+
+    mainSizer->AddSpacer(20);  // Add 20 pixels of space before the footer
+    mainSizer->Add(footerSizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL | wxALL, 10);
+
     panel->SetSizer(mainSizer);
     mainSizer->Fit(this);
 
@@ -92,6 +112,7 @@ MainFrame::MainFrame(const wxString& title, const wxString& gitVersion)
     this->SetSizer(frameSizer);
 
     this->SetMinSize(wxSize(1000, 800));
+    this->Layout();
     this->Fit();
 
     BindEvents();

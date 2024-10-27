@@ -10,10 +10,11 @@
 #include <wx/image.h>
 #include <wx/bitmap.h>
 #include <wx/statbmp.h>
+#include "mainFrame.hpp"
 
 
 // wxApp-derived class
-class MyApp : public wxApp {
+class PingCCXPoolApp : public wxApp {
 public:
     virtual bool OnInit() override;
 };

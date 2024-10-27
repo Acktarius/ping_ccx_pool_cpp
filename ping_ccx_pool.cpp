@@ -237,12 +237,12 @@ void MainFrame::SummarizeResults() {
     }
 }
 
-// MyApp implementation
-bool MyApp::OnInit() {
+// PingCCXPoolApp implementation
+bool PingCCXPoolApp::OnInit() {
     wxInitAllImageHandlers();
     MainFrame* frame = new MainFrame("Ping CCX Pool", GIT_VERSION);
     frame->Show(true);
     return true;
 }
 
-wxIMPLEMENT_APP(MyApp);
+wxIMPLEMENT_APP(PingCCXPoolApp);

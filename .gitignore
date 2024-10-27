@@ -1,6 +1,6 @@
 .git
 .cursorrules
 ri.sh
-./build
+/build
 create_appimage.sh
 linuxdeploy*
