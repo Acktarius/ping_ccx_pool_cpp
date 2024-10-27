@@ -1,4 +1,5 @@
 .git
+/.vscode
 .cursorrules
 ri.sh
 /build
