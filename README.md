@@ -98,10 +98,12 @@ sudo chmod -R 755 /opt/conceal-toolbox/ping_ccx_pool
 ## Option 2 : Building from Source the C++ version for Ubuntu/Debian users  
 
 1. Dependencies:
-   ```
+   ```bash
    sudo apt update
    sudo apt install build-essential cmake libwxgtk3.0-gtk3-dev git nlohmann-json3-dev nmap
    ```
+*note, is case of error installing libwxgtk3.0-gtk3-dev, you can try instead :* `sudo apt install libwxgtk3.2-dev`
+
 
 2. Clone the repository:
    ```bash
