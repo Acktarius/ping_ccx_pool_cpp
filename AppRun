@@ -1,0 +1,91 @@
+#!/bin/bash
+
+# Function to check if a package is installed
+check_package() {
+    if ! command -v $1 &> /dev/null; then
+        return 1
+    fi
+    return 0
+}
+
+# Function to install packages using the appropriate package manager
+install_packages() {
+    local packages=("$@")
+    local package_manager=""
+    local install_cmd=""
+    
+    # Detect package manager
+    if command -v apt &> /dev/null; then
+        package_manager="apt"
+        install_cmd="apt install -y"
+    elif command -v dnf &> /dev/null; then
+        package_manager="dnf"
+        install_cmd="dnf install -y"
+    elif command -v pacman &> /dev/null; then
+        package_manager="pacman"
+        install_cmd="pacman -S --noconfirm"
+    elif command -v zypper &> /dev/null; then
+        package_manager="zypper"
+        install_cmd="zypper install -y"
+    else
+        echo "Error: Could not detect package manager. Please install the following packages manually:"
+        printf '%s\n' "${packages[@]}"
+        return 1
+    fi
+    
+    echo "Using package manager: $package_manager"
+    
+    # Ask for permission to install
+    read -p "Would you like to install the missing dependencies? (y/n) " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        echo "Installing packages..."
+        if [ "$package_manager" = "pacman" ]; then
+            sudo $install_cmd "${packages[@]/#/}"
+        else
+            sudo $install_cmd "${packages[@]}"
+        fi
+        return $?
+    fi
+    return 1
+}
+
+# Get the directory where the AppImage is mounted
+APPDIR="$(dirname "$(readlink -f "$0")")"
+
+# Check for required packages
+MISSING_PACKAGES=()
+
+# Check for nmap
+if ! check_package nping; then
+    MISSING_PACKAGES+=("nmap")
+fi
+
+# Check for polkit
+if ! command -v pkexec &> /dev/null; then
+    if command -v apt &> /dev/null; then
+        MISSING_PACKAGES+=("policykit-1")
+    elif command -v dnf &> /dev/null; then
+        MISSING_PACKAGES+=("polkit")
+    elif command -v pacman &> /dev/null; then
+        MISSING_PACKAGES+=("polkit")
+    elif command -v zypper &> /dev/null; then
+        MISSING_PACKAGES+=("polkit")
+    fi
+fi
+
+# If there are missing packages, try to install them
+if [ ${#MISSING_PACKAGES[@]} -ne 0 ]; then
+    echo "The following required packages are missing:"
+    printf '%s\n' "${MISSING_PACKAGES[@]}"
+    
+    if install_packages "${MISSING_PACKAGES[@]}"; then
+        echo "Dependencies installed successfully."
+    else
+        echo "Error: Could not install dependencies. Please install them manually."
+        exit 1
+    fi
+fi
+
+# Launch the actual application
+exec "$APPDIR/usr/bin/PingCCXPool" "$@"

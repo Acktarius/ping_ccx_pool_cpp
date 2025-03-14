@@ -7,6 +7,11 @@
   <summary>Ping Conceal Network mining pools</summary>
   <description>
     <p>Application to ping CCX pools and monitor their response times.</p>
+    <p>System Requirements:</p>
+    <ul>
+      <li>nmap package (for nping command)</li>
+      <li>polkit (for elevated privileges)</li>
+    </ul>
   </description>
   <developer_name>Acktarius</developer_name>
   <update_contact>acktarius@conceal.network</update_contact>

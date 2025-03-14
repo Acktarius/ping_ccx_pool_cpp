@@ -2,7 +2,7 @@
 Version=1.0
 Type=Application
 Name=PingCCXPool
-Comment=Application to ping CCX pools (vVERSION_X)
+Comment=Application to ping CCX pools (vVERSION_X). Requires nmap and polkit for nping functionality.
 Path=/usr/bin
 Exec=PingCCXPool
 Icon=PingCCXPool

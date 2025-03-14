@@ -57,10 +57,10 @@ jobs:
         
         # Copy binary and json file
         cp bin/* AppDir/usr/bin/
-        chmod 644 AppDir/usr/bin/pools.json  # Set read/write permissions for pools.json
-        chmod 644 AppDir/usr/bin/pp.png      # Set read/write permissions for pp.png
-        chown $(id -u):$(id -g) AppDir/usr/bin/pools.json  # Set current user as owner
-        chown $(id -u):$(id -g) AppDir/usr/bin/pp.png      # Set current user as owner
+        
+        # Copy and setup AppRun script
+        cp ../AppRun AppDir/AppRun
+        chmod +x AppDir/AppRun
         
         # Process desktop file template
         cp ../PingCCXPool.desktop.template AppDir/usr/share/applications/PingCCXPool.desktop
@@ -81,8 +81,13 @@ jobs:
     - name: Create AppImage
       working-directory: build
       run: |
-        # Create AppImage using the AppDir created by make install
-        ../linuxdeploy-x86_64.AppImage --appdir AppDir --output appimage
+        # Create AppImage using explicit flags for better control
+        ../linuxdeploy-x86_64.AppImage \
+          --appdir AppDir \
+          --executable AppDir/usr/bin/PingCCXPool \
+          --desktop-file AppDir/usr/share/applications/PingCCXPool.desktop \
+          --icon-file AppDir/usr/share/icons/hicolor/256x256/apps/PingCCXPool.png \
+          --output appimage
         
         # Rename and create MD5
         mv PingCCXPool*.AppImage PingCCXPool-${{ steps.get_version.outputs.FILE_VERSION }}-ubuntu22.04-x86_64.AppImage
