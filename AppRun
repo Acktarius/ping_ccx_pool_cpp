@@ -104,35 +104,37 @@ if [ -n "$APPIMAGE" ]; then  # Only create desktop file if we're running as an A
             
             # Create desktop file and copy icons in one pkexec session
             SETUP_SCRIPT=$(mktemp)
-            cat > "$SETUP_SCRIPT" << EOL
+            cat > "${SETUP_SCRIPT}" << 'EOL'
 #!/bin/bash
+
+# Get the real user who executed pkexec
+REAL_USER=$(getent passwd "${PKEXEC_UID}" | cut -d: -f1)
+
 # Create desktop entry
-cat > "$DESKTOP_FILE" << EOF
+cat > "${DESKTOP_FILE}" << EOF
 [Desktop Entry]
 Type=Application
 Name=PingCCXPool
 Comment=Ping Conceal Network mining pools
 Exec=${APPIMAGE}
-Icon=/usr/share/icons/hicolor/256x256/apps/PingCCXPool.png
+Icon=PingCCXPool
 Categories=Network;Utility;
 Terminal=false
 EOF
 chmod 644 "${DESKTOP_FILE}"
 
 # Setup icons
-for SIZE in 128x128 256x256; do
-    ICON_PATH="/usr/share/icons/hicolor/${SIZE}/apps"
-    mkdir -p "\$ICON_PATH"
-    cp "${APPDIR}/usr/share/icons/hicolor/${SIZE}/apps/PingCCXPool.png" "${ICON_PATH}/PingCCXPool.png"
-    chmod 644 "${ICON_PATH}/PingCCXPool.png"
-done
+mkdir -p "/home/${REAL_USER}/.icons"
+cp "${APPDIR}/usr/share/icons/hicolor/128x128/apps/PingCCXPool.png" "/home/${REAL_USER}/.icons/PingCCXPool.png"
+chown -R "${REAL_USER}:" "/home/${REAL_USER}/.icons"
+chmod 644 "/home/${REAL_USER}/.icons/PingCCXPool.png"
 EOL
-            chmod +x "$SETUP_SCRIPT"
+            chmod +x "${SETUP_SCRIPT}"
             
-            if ! pkexec "$SETUP_SCRIPT"; then
+            if ! pkexec "${SETUP_SCRIPT}"; then
                 zenity --error --title="Error" --text="Failed to create desktop shortcut."
             fi
-            rm "$SETUP_SCRIPT"
+            rm "${SETUP_SCRIPT}"
         fi
     fi
 fi
