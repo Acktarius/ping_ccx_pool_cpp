@@ -112,19 +112,19 @@ cat > "$DESKTOP_FILE" << EOF
 Type=Application
 Name=PingCCXPool
 Comment=Ping Conceal Network mining pools
-Exec=$APPIMAGE
+Exec=${APPIMAGE}
 Icon=/usr/share/icons/hicolor/256x256/apps/PingCCXPool.png
 Categories=Network;Utility;
 Terminal=false
 EOF
-chmod 644 "$DESKTOP_FILE"
+chmod 644 "${DESKTOP_FILE}"
 
 # Setup icons
 for SIZE in 128x128 256x256; do
-    ICON_PATH="/usr/share/icons/hicolor/\$SIZE/apps"
+    ICON_PATH="/usr/share/icons/hicolor/${SIZE}/apps"
     mkdir -p "\$ICON_PATH"
-    cp "$APPDIR/usr/share/icons/hicolor/\$SIZE/apps/PingCCXPool.png" "\$ICON_PATH/PingCCXPool.png"
-    chmod 644 "\$ICON_PATH/PingCCXPool.png"
+    cp "${APPDIR}/usr/share/icons/hicolor/${SIZE}/apps/PingCCXPool.png" "${ICON_PATH}/PingCCXPool.png"
+    chmod 644 "${ICON_PATH}/PingCCXPool.png"
 done
 EOL
             chmod +x "$SETUP_SCRIPT"
