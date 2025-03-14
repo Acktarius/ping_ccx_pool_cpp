@@ -53,7 +53,7 @@ jobs:
       working-directory: build
       run: |
         # Create necessary directories
-        mkdir -p AppDir/usr/{bin,share/{applications,polkit-1/actions,icons/hicolor/256x256/apps}}
+        mkdir -p AppDir/usr/{bin,share/{applications,polkit-1/actions,icons/hicolor/{128x128,256x256}/apps}}
         
         # Copy binary
         cp bin/PingCCXPool AppDir/usr/bin/
@@ -62,25 +62,30 @@ jobs:
         # Copy policy file
         cp ../org.acktarius.nping.policy AppDir/usr/share/polkit-1/actions/
         
-        # Copy icon
+        # Copy and prepare icons
         cp ../pp.png AppDir/usr/share/icons/hicolor/256x256/apps/ping_ccx_pool.png
+        cp ../pp.png AppDir/usr/share/icons/hicolor/128x128/apps/ping_ccx_pool.png
         
     - name: Create desktop entry
       working-directory: build
       run: |
         mkdir -p AppDir/usr/share/applications/
-        cp PingCCXPool.desktop AppDir/usr/share/applications/ping_ccx_pool.desktop
+        cp PingCCXPool.desktop AppDir/usr/share/applications/PingCCXPool.desktop
         
         # Update the desktop entry with correct values
-        sed -i "s|VERSION_X|${{ steps.get_version.outputs.VERSION }}|g" AppDir/usr/share/applications/ping_ccx_pool.desktop
-        sed -i "s|INSTALL_PATH|/usr/bin|g" AppDir/usr/share/applications/ping_ccx_pool.desktop
-        sed -i "s|EXEC_NAME|PingCCXPool|g" AppDir/usr/share/applications/ping_ccx_pool.desktop
+        sed -i "s|VERSION_X|${{ steps.get_version.outputs.VERSION }}|g" AppDir/usr/share/applications/PingCCXPool.desktop
+        sed -i "s|INSTALL_PATH|/usr/bin|g" AppDir/usr/share/applications/PingCCXPool.desktop
+        sed -i "s|EXEC_NAME|PingCCXPool|g" AppDir/usr/share/applications/PingCCXPool.desktop
         
     - name: Create AppImage
       working-directory: build
       run: |
-        # Create AppImage
-        ../linuxdeploy-x86_64.AppImage --appdir AppDir --output appimage
+        # Create AppImage with explicit desktop file and icon
+        ../linuxdeploy-x86_64.AppImage \
+          --appdir AppDir \
+          --desktop-file=AppDir/usr/share/applications/PingCCXPool.desktop \
+          --icon-file=AppDir/usr/share/icons/hicolor/256x256/apps/ping_ccx_pool.png \
+          --output appimage
         
         # Rename and create MD5
         mv PingCCXPool*.AppImage PingCCXPool-${{ steps.get_version.outputs.FILE_VERSION }}-ubuntu22.04-x86_64.AppImage
