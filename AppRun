@@ -8,10 +8,6 @@ check_package() {
     return 0
 }
 
-# Get the directory where the AppImage is mounted
-APPDIR="$(dirname "$(readlink -f "$0")")"
-APPIMAGE_PATH="$(readlink -f "$0")"
-
 # 1. Check for zenity
 if ! check_package zenity; then
     echo "Zenity is required. Please install it using your package manager and try again."
@@ -84,45 +80,56 @@ if ! check_package nping; then
     fi
 fi
 
-# 5. Setup desktop file
-DESKTOP_FILE="/usr/share/applications/PingCCXPool.desktop"
-if [ ! -f "$DESKTOP_FILE" ]; then
-    DESKTOP_CONTENT="[Desktop Entry]
+# Get the directory where the AppImage is mounted
+APPDIR="$(dirname "$(readlink -f "$0")")"
+
+# Fix permissions for required files in the mounted AppDir
+chown $(id -u):$(id -g) "$APPDIR/usr/bin/pools.json" "$APPDIR/usr/bin/pp.png"
+
+# Setup desktop file if not exists
+if [ -n "$APPIMAGE" ]; then  # Only create desktop file if we're running as an AppImage
+    DESKTOP_FILE="/usr/share/applications/PingCCXPool.desktop"
+    if [ ! -f "$DESKTOP_FILE" ]; then
+        if zenity --question \
+            --title="Desktop Integration" \
+            --text="Would you like to add PingCCXPool to your applications menu?" \
+            --ok-label="Yes" \
+            --cancel-label="No"; then
+            
+            # Create desktop file and copy icons in one pkexec session
+            SETUP_SCRIPT=$(mktemp)
+            cat > "$SETUP_SCRIPT" << EOL
+#!/bin/bash
+# Create desktop entry
+cat > "$DESKTOP_FILE" << EOF
+[Desktop Entry]
 Type=Application
 Name=PingCCXPool
 Comment=Ping Conceal Network mining pools
-Exec=${APPIMAGE_PATH}
+Exec="$APPIMAGE"
 Icon=PingCCXPool
 Categories=Network;Utility;
-Terminal=false"
+Terminal=false
+EOF
+chmod 644 "$DESKTOP_FILE"
 
-    if zenity --question \
-        --title="Desktop Integration" \
-        --text="Would you like to add PingCCXPool to your applications menu?" \
-        --ok-label="Yes" \
-        --cancel-label="No"; then
-        
-        echo "$DESKTOP_CONTENT" | pkexec tee "$DESKTOP_FILE" > /dev/null
-        pkexec chmod 644 "$DESKTOP_FILE"
+# Setup icons
+for SIZE in 128x128 256x256; do
+    ICON_PATH="/usr/share/icons/hicolor/\$SIZE/apps"
+    mkdir -p "\$ICON_PATH"
+    cp "$APPDIR/usr/share/icons/hicolor/\$SIZE/apps/PingCCXPool.png" "\$ICON_PATH/PingCCXPool.png"
+    chmod 644 "\$ICON_PATH/PingCCXPool.png"
+done
+EOL
+            chmod +x "$SETUP_SCRIPT"
+            
+            if ! pkexec "$SETUP_SCRIPT"; then
+                zenity --error --title="Error" --text="Failed to create desktop shortcut."
+            fi
+            rm "$SETUP_SCRIPT"
+        fi
     fi
 fi
 
-# 6. Setup icon
-ICON_DIR="/usr/share/icons/hicolor"
-ICON_SIZES=("128x128" "256x256")
-
-for SIZE in "${ICON_SIZES[@]}"; do
-    ICON_PATH="$ICON_DIR/$SIZE/apps"
-    TARGET_ICON="$ICON_PATH/PingCCXPool.png"
-    
-    if [ ! -f "$TARGET_ICON" ] && [ ! -L "$TARGET_ICON" ]; then
-        if [ ! -d "$ICON_PATH" ]; then
-            pkexec mkdir -p "$ICON_PATH"
-        fi
-        pkexec cp "$APPDIR/usr/share/icons/hicolor/$SIZE/apps/PingCCXPool.png" "$TARGET_ICON"
-        pkexec chmod 644 "$TARGET_ICON"
-    fi
-done
-
-# 7. Launch the application
+# Launch the application
 exec "$APPDIR/usr/bin/PingCCXPool" "$@"
