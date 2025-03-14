@@ -53,7 +53,7 @@ jobs:
       working-directory: build
       run: |
         # Create necessary directories
-        mkdir -p AppDir/usr/{bin,share/{applications,polkit-1/actions,icons/hicolor/{128x128,256x256}/apps,metainfo}}
+        mkdir -p AppDir/usr/{bin,share/{applications,polkit-1/actions,icons/hicolor/{128x128,256x256}/apps,metainfo,doc/PingCCXPool}}
         
         # Copy binary
         cp bin/PingCCXPool AppDir/usr/bin/
@@ -62,9 +62,15 @@ jobs:
         # Copy policy file
         cp ../org.acktarius.nping.policy AppDir/usr/share/polkit-1/actions/
         
+        # Copy copyright file for the icon
+        cp ../copyright AppDir/usr/share/doc/PingCCXPool/
+        
         # Copy and prepare icons (Copyright Acktarius)
         cp ../pp.png AppDir/usr/share/icons/hicolor/256x256/apps/PingCCXPool.png
         cp ../pp.png AppDir/usr/share/icons/hicolor/128x128/apps/PingCCXPool.png
+        
+        # Create a symbolic link for the icon in the root directory
+        ln -sf usr/share/icons/hicolor/256x256/apps/PingCCXPool.png AppDir/PingCCXPool.png
         
         # Copy and update metainfo file
         cp ../org.acktarius.PingCCXPool.appdata.xml AppDir/usr/share/metainfo/
@@ -82,12 +88,16 @@ jobs:
         sed -i "s|INSTALL_PATH|/usr/bin|g" AppDir/usr/share/applications/PingCCXPool.desktop
         sed -i "s|EXEC_NAME|PingCCXPool|g" AppDir/usr/share/applications/PingCCXPool.desktop
         
+        # Create a symbolic link for the desktop file in the root directory
+        ln -sf usr/share/applications/PingCCXPool.desktop AppDir/PingCCXPool.desktop
+        
     - name: Create AppImage
       working-directory: build
       run: |
-        # Create AppImage with explicit desktop file and icon
+        # Create AppImage with explicit executable, desktop file, and icon
         ../linuxdeploy-x86_64.AppImage \
           --appdir AppDir \
+          --executable=AppDir/usr/bin/PingCCXPool \
           --desktop-file=AppDir/usr/share/applications/PingCCXPool.desktop \
           --icon-file=AppDir/usr/share/icons/hicolor/256x256/apps/PingCCXPool.png \
           --output appimage
