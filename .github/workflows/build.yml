@@ -84,7 +84,6 @@ jobs:
         # Create AppImage using explicit flags for better control
         ../linuxdeploy-x86_64.AppImage \
           --appdir AppDir \
-          --executable AppDir/usr/bin/PingCCXPool \
           --desktop-file AppDir/usr/share/applications/PingCCXPool.desktop \
           --icon-file AppDir/usr/share/icons/hicolor/256x256/apps/PingCCXPool.png \
           --output appimage
