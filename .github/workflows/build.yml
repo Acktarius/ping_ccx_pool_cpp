@@ -1,0 +1,89 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Get version
+      id: get_version
+      run: |
+        if [[ $GITHUB_REF == refs/tags/* ]]; then
+          echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+        else
+          echo "VERSION=1.0.2-dev" >> $GITHUB_OUTPUT
+        fi
+    
+    - name: Install Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential cmake libwxgtk3.0-gtk3-dev nlohmann-json3-dev nmap
+        
+    - name: Create Build Directory
+      run: mkdir build
+      
+    - name: Configure CMake
+      working-directory: build
+      run: cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr
+      
+    - name: Build
+      working-directory: build
+      run: cmake --build . --config Release
+      
+    - name: Download linuxdeploy
+      run: |
+        wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+        chmod +x linuxdeploy-x86_64.AppImage
+        
+    - name: Prepare AppDir
+      working-directory: build
+      run: |
+        make DESTDIR=AppDir install
+        mkdir -p AppDir/usr/share/polkit-1/actions/
+        cp ../org.acktarius.nping.policy AppDir/usr/share/polkit-1/actions/
+        mkdir -p AppDir/usr/share/icons/hicolor/256x256/apps/
+        cp ../pp.png AppDir/usr/share/icons/hicolor/256x256/apps/ping_ccx_pool.png
+        
+    - name: Create desktop entry
+      run: |
+        cat > build/AppDir/usr/share/applications/ping_ccx_pool.desktop << EOL
+        [Desktop Entry]
+        Version=${{ steps.get_version.outputs.VERSION }}
+        Type=Application
+        Name=CCX Ping Pool
+        Comment=Ping Conceal Network mining pools
+        Exec=ping_ccx_pool
+        Icon=ping_ccx_pool
+        Categories=Network;Utility;
+        EOL
+        
+    - name: Create AppImage
+      working-directory: build
+      run: |
+        ../linuxdeploy-x86_64.AppImage --appdir AppDir --output appimage
+        
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: PingCCXPool-${{ steps.get_version.outputs.VERSION }}-x86_64.AppImage
+        path: build/PingCCXPool*.AppImage
+        
+    - name: Create Release
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: softprops/action-gh-release@v1
+      with:
+        files: build/PingCCXPool*.AppImage
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
