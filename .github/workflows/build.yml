@@ -75,7 +75,7 @@ jobs:
         ../linuxdeploy-x86_64.AppImage --appdir AppDir --output appimage
         
     - name: Upload Artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: PingCCXPool-${{ steps.get_version.outputs.VERSION }}-x86_64.AppImage
         path: build/PingCCXPool*.AppImage
