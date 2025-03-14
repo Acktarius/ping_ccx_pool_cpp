@@ -59,17 +59,16 @@ jobs:
         cp ../pp.png AppDir/usr/share/icons/hicolor/256x256/apps/ping_ccx_pool.png
         
     - name: Create desktop entry
+      working-directory: build
       run: |
-        cat > build/AppDir/usr/share/applications/ping_ccx_pool.desktop << EOL
-        [Desktop Entry]
-        Version=${{ steps.get_version.outputs.VERSION }}
-        Type=Application
-        Name=CCX Ping Pool
-        Comment=Ping Conceal Network mining pools
-        Exec=ping_ccx_pool
-        Icon=ping_ccx_pool
-        Categories=Network;Utility;
-        EOL
+        mkdir -p AppDir/usr/share/applications/
+        cp ../build/PingCCXPool.desktop AppDir/usr/share/applications/ping_ccx_pool.desktop
+        # Replace VERSION_X with actual version
+        sed -i "s/VERSION_X/${{ steps.get_version.outputs.VERSION }}/g" AppDir/usr/share/applications/ping_ccx_pool.desktop
+        # Update Path and Exec
+        sed -i "s|Path=.*|Path=/usr/bin/|" AppDir/usr/share/applications/ping_ccx_pool.desktop
+        sed -i "s|Exec=.*|Exec=ping_ccx_pool|" AppDir/usr/share/applications/ping_ccx_pool.desktop
+        sed -i "s|Icon=.*|Icon=ping_ccx_pool|" AppDir/usr/share/applications/ping_ccx_pool.desktop
         
     - name: Create AppImage
       working-directory: build
