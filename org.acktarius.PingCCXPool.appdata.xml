@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>org.acktarius.PingCCXPool</id>
+  <metadata_license>MIT</metadata_license>
+  <project_license>MIT</project_license>
+  <name>PingCCXPool</name>
+  <summary>Ping Conceal Network mining pools</summary>
+  <description>
+    <p>Application to ping CCX pools and monitor their response times.</p>
+  </description>
+  <developer_name>Acktarius</developer_name>
+  <update_contact>acktarius@conceal.network</update_contact>
+  <url type="homepage">https://github.com/Acktarius/ping_ccx_pool_cpp</url>
+  <provides>
+    <binary>PingCCXPool</binary>
+  </provides>
+  <content_rating type="oars-1.1" />
+  <releases>
+    <release version="VERSION_X" date="DATE_X"/>
+  </releases>
+  <copyright>Copyright © 2023-2025 Acktarius</copyright>
+</component> 

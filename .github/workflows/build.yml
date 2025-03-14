@@ -53,7 +53,7 @@ jobs:
       working-directory: build
       run: |
         # Create necessary directories
-        mkdir -p AppDir/usr/{bin,share/{applications,polkit-1/actions,icons/hicolor/{128x128,256x256}/apps}}
+        mkdir -p AppDir/usr/{bin,share/{applications,polkit-1/actions,icons/hicolor/{128x128,256x256}/apps,metainfo}}
         
         # Copy binary
         cp bin/PingCCXPool AppDir/usr/bin/
@@ -62,9 +62,14 @@ jobs:
         # Copy policy file
         cp ../org.acktarius.nping.policy AppDir/usr/share/polkit-1/actions/
         
-        # Copy and prepare icons
-        cp ../pp.png AppDir/usr/share/icons/hicolor/256x256/apps/ping_ccx_pool.png
-        cp ../pp.png AppDir/usr/share/icons/hicolor/128x128/apps/ping_ccx_pool.png
+        # Copy and prepare icons (Copyright Acktarius)
+        cp ../pp.png AppDir/usr/share/icons/hicolor/256x256/apps/PingCCXPool.png
+        cp ../pp.png AppDir/usr/share/icons/hicolor/128x128/apps/PingCCXPool.png
+        
+        # Copy and update metainfo file
+        cp ../org.acktarius.PingCCXPool.appdata.xml AppDir/usr/share/metainfo/
+        sed -i "s/VERSION_X/${{ steps.get_version.outputs.VERSION }}/g" AppDir/usr/share/metainfo/org.acktarius.PingCCXPool.appdata.xml
+        sed -i "s/DATE_X/$(date +%Y-%m-%d)/g" AppDir/usr/share/metainfo/org.acktarius.PingCCXPool.appdata.xml
         
     - name: Create desktop entry
       working-directory: build
@@ -84,7 +89,7 @@ jobs:
         ../linuxdeploy-x86_64.AppImage \
           --appdir AppDir \
           --desktop-file=AppDir/usr/share/applications/PingCCXPool.desktop \
-          --icon-file=AppDir/usr/share/icons/hicolor/256x256/apps/ping_ccx_pool.png \
+          --icon-file=AppDir/usr/share/icons/hicolor/256x256/apps/PingCCXPool.png \
           --output appimage
         
         # Rename and create MD5
