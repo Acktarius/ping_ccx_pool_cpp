@@ -57,6 +57,8 @@ jobs:
         
         # Copy binary and json file
         cp bin/* AppDir/usr/bin/
+        # Set ownership to nobody:nogroup for read-only data files
+        chown nobody:nogroup AppDir/usr/bin/pools.json AppDir/usr/bin/pp.png
         
         # Copy and setup AppRun script
         cp ../AppRun AppDir/AppRun
