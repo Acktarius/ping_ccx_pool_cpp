@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.0)
 find_package(Git QUIET)
 
 if(GIT_FOUND)
-  # Retrieve the latest tag
+  # Retrieve the latest tag and strip the 'v' prefix if present
   execute_process(
     COMMAND ${GIT_EXECUTABLE} describe --tags --abbrev=0
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
@@ -13,11 +13,15 @@ if(GIT_FOUND)
     ERROR_QUIET
   )
 
-  # If a tag was found, use it as the version
-  if(GIT_TAG)
-    set(VERSION ${GIT_TAG})
+  # Strip the 'v' prefix if present
+  if(GIT_TAG MATCHES "^v(.*)")
+    set(VERSION "${CMAKE_MATCH_1}")
   else()
-    # Fallback version if no tag is found
+    set(VERSION "${GIT_TAG}")
+  endif()
+
+  # If no valid version was found, use fallback
+  if(NOT VERSION)
     set(VERSION "0.0.0")
   endif()
 else()
