@@ -57,12 +57,16 @@ jobs:
         
         # Copy binary and json file
         cp bin/* AppDir/usr/bin/
+        chmod 644 AppDir/usr/bin/pools.json  # Set read/write permissions for pools.json
+        chmod 644 AppDir/usr/bin/pp.png      # Set read/write permissions for pp.png
+        chown $(id -u):$(id -g) AppDir/usr/bin/pools.json  # Set current user as owner
+        chown $(id -u):$(id -g) AppDir/usr/bin/pp.png      # Set current user as owner
         
         # Process desktop file template
         cp ../PingCCXPool.desktop.template AppDir/usr/share/applications/PingCCXPool.desktop
         sed -i "s/VERSION_X/${{ steps.get_version.outputs.VERSION }}/g" AppDir/usr/share/applications/PingCCXPool.desktop
         
-        # Copy icons
+        # Copy icons for desktop integration
         cp ../pp.png AppDir/usr/share/icons/hicolor/256x256/apps/PingCCXPool.png
         cp ../pp.png AppDir/usr/share/icons/hicolor/128x128/apps/PingCCXPool.png
         
