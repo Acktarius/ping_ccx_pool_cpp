@@ -84,7 +84,19 @@ fi
 APPDIR="$(dirname "$(readlink -f "$0")")"
 
 # Fix permissions for required files in the mounted AppDir
+PERM_SCRIPT=$(mktemp)
+cat > "$PERM_SCRIPT" << EOL
+#!/bin/bash
 chown $(id -u):$(id -g) "$APPDIR/usr/bin/pools.json" "$APPDIR/usr/bin/pp.png"
+EOL
+chmod +x "$PERM_SCRIPT"
+
+if ! pkexec "$PERM_SCRIPT"; then
+    zenity --error --title="Error" --text="Failed to set file permissions."
+    rm "$PERM_SCRIPT"
+    exit 1
+fi
+rm "$PERM_SCRIPT"
 
 # Setup desktop file if not exists
 if [ -n "$APPIMAGE" ]; then  # Only create desktop file if we're running as an AppImage
@@ -106,7 +118,7 @@ cat > "$DESKTOP_FILE" << EOF
 Type=Application
 Name=PingCCXPool
 Comment=Ping Conceal Network mining pools
-Exec="$APPIMAGE"
+Exec=$APPIMAGE
 Icon=PingCCXPool
 Categories=Network;Utility;
 Terminal=false
