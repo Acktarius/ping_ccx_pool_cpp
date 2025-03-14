@@ -7,4 +7,4 @@ Path=/usr/bin
 Exec=PingCCXPool
 Icon=PingCCXPool
 Terminal=false
-Categories=Network;Utility; 
+Categories=Network
