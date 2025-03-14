@@ -113,7 +113,7 @@ Type=Application
 Name=PingCCXPool
 Comment=Ping Conceal Network mining pools
 Exec=$APPIMAGE
-Icon=PingCCXPool
+Icon=/usr/share/icons/hicolor/256x256/apps/PingCCXPool.png
 Categories=Network;Utility;
 Terminal=false
 EOF
