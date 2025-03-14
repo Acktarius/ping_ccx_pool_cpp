@@ -105,8 +105,21 @@ if [ -n "$APPIMAGE" ]; then  # Only create desktop file if we're running as an A
             # Create desktop file and copy icons in one pkexec session
             SETUP_SCRIPT=$(mktemp)
             
-            # Get the real user before escalating privileges
-            REAL_USER="$(whoami)"
+            # Get the real user before escalating privileges - try multiple methods
+            if [ -n "${SUDO_USER}" ]; then
+                REAL_USER="${SUDO_USER}"
+            elif [ -n "${USER}" ]; then
+                REAL_USER="${USER}"
+            else
+                REAL_USER="$(logname 2>/dev/null || id -un)"
+            fi
+
+            # Verify we got a valid username
+            if [ -z "${REAL_USER}" ]; then
+                zenity --error --title="Error" --text="Could not determine the current user."
+                rm "${SETUP_SCRIPT}"
+                exit 1
+            fi
             
             cat > "${SETUP_SCRIPT}" << 'EOL'
 #!/bin/bash
