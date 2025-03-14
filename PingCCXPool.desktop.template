@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=VERSION_X
+Type=Application
+Name=PingCCXPool
+Comment=Application to ping CCX pools (vVERSION_X)
+Path=PATH_X
+Exec=EXEC_X
+Icon=PingCCXPool
+Terminal=false
+Categories=Utility;Network; 

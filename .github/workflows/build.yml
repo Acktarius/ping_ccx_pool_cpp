@@ -40,12 +40,34 @@ jobs:
       working-directory: build
       run: cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr
       
-    - name: Build and Install to AppDir
+    - name: Build and Install
       working-directory: build
       run: |
-        make
-        make DESTDIR=AppDir install
-      
+        cmake --build .
+        
+        # Create necessary directories
+        mkdir -p AppDir/usr/bin
+        mkdir -p AppDir/usr/share/applications
+        mkdir -p AppDir/usr/share/icons/hicolor/256x256/apps
+        mkdir -p AppDir/usr/share/icons/hicolor/128x128/apps
+        mkdir -p AppDir/usr/share/PingCCXPool/resources
+        
+        # Copy binary and json file
+        cp bin/* AppDir/usr/bin/
+        
+        # Process desktop file template
+        cp ../PingCCXPool.desktop.template AppDir/usr/share/applications/PingCCXPool.desktop
+        sed -i "s/VERSION_X/${{ steps.get_version.outputs.VERSION }}/g" AppDir/usr/share/applications/PingCCXPool.desktop
+        sed -i "s|PATH_X|/usr/bin|g" AppDir/usr/share/applications/PingCCXPool.desktop
+        sed -i "s|EXEC_X|PingCCXPool|g" AppDir/usr/share/applications/PingCCXPool.desktop
+        
+        # Copy icons
+        cp ../pp.png AppDir/usr/share/icons/hicolor/256x256/apps/PingCCXPool.png
+        cp ../pp.png AppDir/usr/share/icons/hicolor/128x128/apps/PingCCXPool.png
+        
+        # Copy policy file for manual installation
+        cp ../org.acktarius.nping.policy AppDir/usr/share/PingCCXPool/resources/
+        
     - name: Download linuxdeploy
       run: |
         wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
