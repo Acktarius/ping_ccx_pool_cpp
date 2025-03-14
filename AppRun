@@ -8,6 +8,9 @@ check_package() {
     return 0
 }
 
+# Get the directory where the AppImage is mounted
+APPDIR="$(dirname "$(readlink -f "$0")")"
+
 # 1. Check for zenity
 if ! check_package zenity; then
     echo "Zenity is required. Please install it using your package manager and try again."
@@ -58,6 +61,15 @@ if ! command -v pkexec &> /dev/null; then
             zenity --error --title="Error" --text="Failed to install polkit. Please install it manually."
             exit 1
         fi
+
+        # Install policy file after polkit is installed
+        POLICY_FILE="$APPDIR/usr/share/PingCCXPool/resources/org.acktarius.nping.policy"
+        if [ ! -f "/usr/share/polkit-1/actions/org.acktarius.nping.policy" ] && [ -f "$POLICY_FILE" ]; then
+            if ! pkexec cp "$POLICY_FILE" /usr/share/polkit-1/actions/; then
+                zenity --error --title="Error" --text="Failed to install polkit policy file."
+                exit 1
+            fi
+        fi
     else
         exit 1
     fi
@@ -79,9 +91,6 @@ if ! check_package nping; then
         exit 1
     fi
 fi
-
-# Get the directory where the AppImage is mounted
-APPDIR="$(dirname "$(readlink -f "$0")")"
 
 # Setup desktop file if not exists
 if [ -n "$APPIMAGE" ]; then  # Only create desktop file if we're running as an AppImage
@@ -128,5 +137,8 @@ EOL
     fi
 fi
 
+# Change to binary directory to ensure access to resources
+cd "$APPDIR/usr/bin"
+
 # Launch the application
-exec "$APPDIR/usr/bin/PingCCXPool" "$@"
+exec "./PingCCXPool" "$@"

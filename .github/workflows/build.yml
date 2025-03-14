@@ -57,7 +57,7 @@ jobs:
         
         # Copy binary and json file
         cp bin/* AppDir/usr/bin/
-        # Set ownership to nobody:nogroup for read-only data files
+        # Set ownership for read-only data files
         sudo chown nobody:nogroup AppDir/usr/bin/pools.json AppDir/usr/bin/pp.png
         
         # Copy and setup AppRun script
@@ -72,7 +72,7 @@ jobs:
         cp ../pp.png AppDir/usr/share/icons/hicolor/256x256/apps/PingCCXPool.png
         cp ../pp.png AppDir/usr/share/icons/hicolor/128x128/apps/PingCCXPool.png
         
-        # Copy policy file for manual installation
+        # Copy policy file
         cp ../org.acktarius.nping.policy AppDir/usr/share/PingCCXPool/resources/
         
     - name: Download linuxdeploy
