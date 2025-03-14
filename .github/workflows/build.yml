@@ -58,8 +58,6 @@ jobs:
         # Process desktop file template
         cp ../PingCCXPool.desktop.template AppDir/usr/share/applications/PingCCXPool.desktop
         sed -i "s/VERSION_X/${{ steps.get_version.outputs.VERSION }}/g" AppDir/usr/share/applications/PingCCXPool.desktop
-        sed -i "s|PATH_X|/usr/bin|g" AppDir/usr/share/applications/PingCCXPool.desktop
-        sed -i "s|EXEC_X|PingCCXPool|g" AppDir/usr/share/applications/PingCCXPool.desktop
         
         # Copy icons
         cp ../pp.png AppDir/usr/share/icons/hicolor/256x256/apps/PingCCXPool.png
