@@ -125,6 +125,10 @@ if [ -n "$APPIMAGE" ]; then  # Only create desktop file if we're running as an A
             # Define icons directory
             ICONS_DIR="/home/${REAL_USER}/.icons"
 
+            # Copy icon to tmp first (as regular user)
+            TEMP_ICON="/tmp/PingCCXPool_$$.png"
+            cp "${APPDIR}/PingCCXPool.png" "${TEMP_ICON}"
+
             # Create desktop file installation script
             cat > "${DESKTOP_SCRIPT}" << EOL
 #!/bin/bash
@@ -148,13 +152,14 @@ EOL
 # Debug output
 echo "Debug info:" > /tmp/icon_debug.log
 echo "ICONS_DIR=${ICONS_DIR}" >> /tmp/icon_debug.log
-echo "APPDIR=${APPDIR}" >> /tmp/icon_debug.log
+echo "TEMP_ICON=${TEMP_ICON}" >> /tmp/icon_debug.log
 echo "REAL_USER=${REAL_USER}" >> /tmp/icon_debug.log
 
 mkdir -p "${ICONS_DIR}"
-cp "${APPDIR}/PingCCXPool.png" "${ICONS_DIR}/PingCCXPool.png"
+cp "${TEMP_ICON}" "${ICONS_DIR}/PingCCXPool.png"
 chown -R "${REAL_USER}:${REAL_USER}" "${ICONS_DIR}"
 chmod 644 "${ICONS_DIR}/PingCCXPool.png"
+rm -f "${TEMP_ICON}"
 EOL
 
             chmod 755 "${DESKTOP_SCRIPT}" "${ICON_SCRIPT}"
@@ -164,6 +169,9 @@ EOL
             
             pkexec "${DESKTOP_SCRIPT}" || DESKTOP_OK=1
             pkexec "${ICON_SCRIPT}" || ICON_OK=1
+            
+            # Clean up temp files
+            rm -f "${TEMP_ICON}" "${DESKTOP_SCRIPT}" "${ICON_SCRIPT}"
             
             if [ $DESKTOP_OK -eq 1 ] || [ $ICON_OK -eq 1 ]; then
                 if [ $DESKTOP_OK -eq 1 ]; then
@@ -179,7 +187,6 @@ EOL
                     fi
                 fi
             fi
-            rm -f "${DESKTOP_SCRIPT}" "${ICON_SCRIPT}"
         fi
     fi
 fi
