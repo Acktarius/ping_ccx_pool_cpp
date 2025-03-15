@@ -103,8 +103,8 @@ if [ -n "$APPIMAGE" ]; then  # Only create desktop file if we're running as an A
             --cancel-label="No"; then
             
             # Create desktop file and copy icons in one pkexec session
-            DESKTOP_SCRIPT=$(mktemp)
-            ICON_SCRIPT=$(mktemp)
+            DESKTOP_SCRIPT="/tmp/pingccx_desktop_$$"
+            ICON_SCRIPT="/tmp/pingccx_icon_$$"
             
             # Get the real user before escalating privileges - try multiple methods
             if [ -n "${SUDO_USER}" ]; then
@@ -155,7 +155,7 @@ chown -R "$1:$1" "$2"
 chmod 644 "$2/PingCCXPool.png"
 EOL
 
-            chmod +x "${DESKTOP_SCRIPT}" "${ICON_SCRIPT}"
+            chmod 755 "${DESKTOP_SCRIPT}" "${ICON_SCRIPT}"
             
             DESKTOP_OK=0
             ICON_OK=0
