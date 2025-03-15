@@ -30,7 +30,20 @@ using json = nlohmann::json;
 
 void MainFrame::InitializePoolData() {
     poolsAndPorts.clear();
-    const wxString jsonFilePath = "pools.json";
+    
+    // Try to load pear-pools.json from system location, then fall back to bundled pools.json
+    wxString pearJsonFilePath = "/usr/share/PingCCXPool/pear-pools.json"; 
+    wxString defaultJsonFilePath = "pools.json";
+    wxString jsonFilePath;
+    
+    // Check if pear-pools.json exists and use it if available
+    if (wxFileExists(pearJsonFilePath)) {
+        jsonFilePath = pearJsonFilePath;
+        resultTextCtrl->AppendText("Using community-maintained pool data from system-wide location\n\n");
+    } else {
+        jsonFilePath = defaultJsonFilePath;
+    }
+    
     std::ifstream file(jsonFilePath.ToStdString());
     if (!file.is_open()) {
         wxString errorMsg = wxString::Format("Failed to open %s file. Please ensure the file exists and you have read permissions.", jsonFilePath);
@@ -77,8 +90,8 @@ void MainFrame::InitializePoolData() {
         } catch (json::type_error& e) {
             wxString errorMsg = wxString::Format("Type error in pool entry %d: %s", index, e.what());
             wxMessageBox(errorMsg, "JSON Type Error", wxOK | wxICON_ERROR);
-            
-       }
+            return;
+        }
     }
 }
 

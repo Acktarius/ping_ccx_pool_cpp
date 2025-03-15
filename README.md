@@ -4,7 +4,7 @@
 ### Copyright (c) 2023-2024, Acktarius
 
 
-## this script is delivered “as is” and I deny any and all liability for any damages arising out of using this script
+## this script is delivered "as is" and I deny any and all liability for any damages arising out of using this script
 
 # UBUNTU / DEBIAN
 ## Option 1 : Legacy Bash script
@@ -150,3 +150,47 @@ If you didn't use the `-DINSTALL_POLKIT_POLICY=ON` option with CMake, you need t
 ## Running the Application
 
 After building, you can run the application from the build directory or icon on desktop if you created the shortcut with `cmake --install .`
+
+## Option 3: Pears Integration for Community-Maintained Pool List
+
+The C++ version of PingCCXPool now supports integration with a Pears application for community-maintained pool lists.
+
+### How It Works
+
+1. The main application checks for a `pear-pools.json` file in `/usr/share/PingCCXPool/`
+2. If found, it uses this file which contains community-maintained pool information
+3. If not found, it falls back to the bundled `pools.json`
+
+### Setting Up the Pears Integration
+
+The Pears integration is available as a separate project for better organization and maintenance:
+
+1. Install Pears:
+   ```bash
+   npm install -g @pearsproject/pear
+   ```
+
+2. Get the Pool Sync application:
+   ```bash
+   git clone https://github.com/Acktarius/ping_ccx_pool_pears.git
+   cd ping_ccx_pool_pears
+   ```
+
+3. Run the Pool Sync application:
+   ```bash
+   pear run --dev .
+   ```
+
+4. Use the interface to add new pools or see pools shared by other users
+
+5. Run the regular PingCCXPool application - it will automatically use the updated pools list from the system-wide location
+
+### Benefits
+
+- Community-maintained pool list that stays up-to-date
+- Peer-to-peer sharing means no central server needed
+- Add new pools as they come online without waiting for official updates
+- Completely optional - the main application works fine without it
+- Properly organized in separate projects with a common data file
+
+For more details, see the [Pears Pool Sync Repository](https://github.com/Acktarius/ping_ccx_pool_pears).

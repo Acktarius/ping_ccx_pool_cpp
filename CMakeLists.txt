@@ -183,6 +183,11 @@ if(EXISTS ${POOLS_JSON})
                 ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/pools.json
         COMMENT "Copying pools.json to bin directory"
     )
+    
+    # Add note about pear-pools.json
+    message(STATUS "Note: The application supports loading pools from /usr/share/PingCCXPool/pear-pools.json if present.")
+    message(STATUS "      This allows integration with the Pears P2P pools sharing system.")
+    message(STATUS "      See https://github.com/Acktarius/ping_ccx_pool_pears for the companion application.")
 else()
     message(WARNING "pools.json not found in the source directory. Make sure it exists before running the application.")
 endif()

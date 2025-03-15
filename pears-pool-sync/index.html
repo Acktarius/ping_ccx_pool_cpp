@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Conceal Pool Sync</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #001621;
+      color: #eee;
+    }
+    
+    pear-ctrl {
+      margin-top: 9px;
+      margin-left: 9px;
+      position: absolute;
+    }
+    
+    pear-ctrl[data-platform="darwin"] { 
+      float: left; 
+      margin-top: 4px; 
+    }
+    
+    h1 {
+      color: #ff7d00;
+      margin-top: 40px;
+      text-align: center;
+    }
+    
+    .logo {
+      text-align: center;
+      margin: 20px 0;
+    }
+    
+    .logo img {
+      width: 128px;
+      height: 128px;
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background-color: #002331;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+    }
+    
+    th, td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid #334;
+    }
+    
+    th {
+      background-color: #003344;
+      color: #ff7d00;
+    }
+    
+    tr:hover {
+      background-color: #003344;
+    }
+    
+    .pool-form {
+      margin: 30px 0;
+      padding: 20px;
+      background-color: #00334c;
+      border-radius: 5px;
+    }
+    
+    input, button {
+      padding: 10px;
+      margin: 5px;
+      border: none;
+      border-radius: 3px;
+    }
+    
+    input {
+      width: 70%;
+      background-color: #002331;
+      color: #eee;
+      border: 1px solid #005;
+    }
+    
+    button {
+      background-color: #ff7d00;
+      color: #000;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    
+    button:hover {
+      background-color: #ff9500;
+    }
+    
+    .status {
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #003344;
+      border-radius: 3px;
+    }
+    
+    .peer-info {
+      margin-top: 20px;
+      font-size: 14px;
+      color: #aaa;
+    }
+  </style>
+  <script type="module">
+    import { poolsData, addPool, initialize, startNetwork } from './pear-pool-sync.js';
+    
+    // This will run when the DOM is loaded
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Set up the add pool button
+      const addButton = document.getElementById('add-pool-button');
+      const addressInput = document.getElementById('pool-address');
+      const portInput = document.getElementById('pool-port');
+      
+      addButton.addEventListener('click', () => {
+        const address = addressInput.value.trim();
+        const port = portInput.value.trim();
+        
+        if (address && port) {
+          if (addPool(address, port)) {
+            // Clear inputs on success
+            addressInput.value = '';
+            portInput.value = '';
+          }
+        }
+      });
+      
+      // Periodically update the UI
+      setInterval(() => {
+        updateUI();
+      }, 2000);
+    });
+    
+    function updateUI() {
+      // Update pools list
+      const poolsList = document.getElementById('pools-list');
+      if (!poolsData || !poolsData.pools || poolsData.pools.length === 0) {
+        poolsList.innerHTML = '<tr><td colspan="2">No pools available</td></tr>';
+      } else {
+        poolsList.innerHTML = poolsData.pools.map(pool => `
+          <tr>
+            <td>${pool.address}</td>
+            <td>${pool.port}</td>
+          </tr>
+        `).join('');
+      }
+      
+      // Update peer count
+      const peerCount = document.getElementById('peer-count');
+      const connectionStatus = document.getElementById('connection-status');
+      const lastUpdateElement = document.getElementById('last-update');
+      
+      // These will be updated by the main module
+    }
+  </script>
+</head>
+<body>
+  <pear-ctrl></pear-ctrl>
+  
+  <div class="container">
+    <h1>Conceal Network Pool Sync</h1>
+    
+    <div class="logo">
+      <img src="../pp.png" alt="Conceal Logo">
+    </div>
+    
+    <div class="status">
+      <p>Status: <span id="connection-status">Connecting to network...</span></p>
+      <p>Connected peers: <span id="peer-count">0</span></p>
+      <p>Last update: <span id="last-update">Never</span></p>
+    </div>
+    
+    <h2>Mining Pools</h2>
+    <table id="pools-table">
+      <thead>
+        <tr>
+          <th>Pool Address</th>
+          <th>Port</th>
+        </tr>
+      </thead>
+      <tbody id="pools-list">
+        <!-- Pool list will be populated here -->
+      </tbody>
+    </table>
+    
+    <div class="pool-form">
+      <h3>Add New Pool</h3>
+      <input type="text" id="pool-address" placeholder="Pool address (e.g., pool.conceal.network)">
+      <input type="text" id="pool-port" placeholder="Pool port (e.g., 3333)">
+      <button id="add-pool-button">Add Pool</button>
+    </div>
+    
+    <div class="peer-info">
+      <p>This application shares mining pool information using the Pears peer-to-peer network.</p>
+      <p>All users running this application contribute to keeping the pool list up-to-date.</p>
+    </div>
+  </div>
+</body>
+</html> 

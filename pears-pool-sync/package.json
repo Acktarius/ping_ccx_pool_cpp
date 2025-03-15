@@ -1,0 +1,25 @@
+{
+  "name": "ccx-pool-sync",
+  "version": "1.0.0",
+  "description": "Peer-to-peer sync of Conceal Network mining pools",
+  "main": "pear-pool-sync.js",
+  "type": "module",
+  "pear": {
+    "description": "Community-maintained mining pools for Conceal Network",
+    "runtime": "desktop",
+    "icon": "pp.png",
+    "watch": {
+      "restart": true
+    }
+  },
+  "scripts": {
+    "start": "pear run --dev ."
+  },
+  "author": "Acktarius",
+  "license": "Same as PingCCXPool",
+  "dependencies": {
+    "hyperswarm": "^4.6.1",
+    "b4a": "^1.6.4",
+    "hypercore-crypto": "^3.3.1"
+  }
+} 
