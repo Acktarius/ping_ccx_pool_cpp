@@ -103,8 +103,7 @@ if [ -n "$APPIMAGE" ]; then  # Only create desktop file if we're running as an A
             --cancel-label="No"; then
             
             # Create desktop file and copy icons in one pkexec session
-            DESKTOP_SCRIPT="/tmp/pingccx_desktop_$$"
-            ICON_SCRIPT="/tmp/pingccx_icon_$$"
+            SETUP_SCRIPT="/tmp/pingccx_setup_$$"
             
             # Get the real user before escalating privileges - try multiple methods
             if [ -n "${SUDO_USER}" ]; then
@@ -118,7 +117,7 @@ if [ -n "$APPIMAGE" ]; then  # Only create desktop file if we're running as an A
             # Verify we got a valid username
             if [ -z "${REAL_USER}" ]; then
                 zenity --error --title="Error" --text="Could not determine the current user."
-                rm -f "${DESKTOP_SCRIPT}" "${ICON_SCRIPT}"
+                rm -f "${SETUP_SCRIPT}"
                 exit 1
             fi
 
@@ -129,9 +128,11 @@ if [ -n "$APPIMAGE" ]; then  # Only create desktop file if we're running as an A
             TEMP_ICON="/tmp/PingCCXPool_$$.png"
             cp "${APPDIR}/PingCCXPool.png" "${TEMP_ICON}"
 
-            # Create desktop file installation script
-            cat > "${DESKTOP_SCRIPT}" << EOL
+            # Create combined setup script
+            cat > "${SETUP_SCRIPT}" << EOL
 #!/bin/bash
+
+# Create desktop file
 cat > "${DESKTOP_FILE}" << EOF
 [Desktop Entry]
 Type=Application
@@ -143,18 +144,8 @@ Categories=Network;Utility;
 Terminal=false
 EOF
 chmod 644 "${DESKTOP_FILE}"
-EOL
 
-            # Create icon installation script
-            cat > "${ICON_SCRIPT}" << EOL
-#!/bin/bash
-
-# Debug output
-echo "Debug info:" > /tmp/icon_debug.log
-echo "ICONS_DIR=${ICONS_DIR}" >> /tmp/icon_debug.log
-echo "TEMP_ICON=${TEMP_ICON}" >> /tmp/icon_debug.log
-echo "REAL_USER=${REAL_USER}" >> /tmp/icon_debug.log
-
+# Install icon
 mkdir -p "${ICONS_DIR}"
 cp "${TEMP_ICON}" "${ICONS_DIR}/PingCCXPool.png"
 chown -R "${REAL_USER}:${REAL_USER}" "${ICONS_DIR}"
@@ -162,31 +153,14 @@ chmod 644 "${ICONS_DIR}/PingCCXPool.png"
 rm -f "${TEMP_ICON}"
 EOL
 
-            chmod 755 "${DESKTOP_SCRIPT}" "${ICON_SCRIPT}"
+            chmod 755 "${SETUP_SCRIPT}"
             
-            DESKTOP_OK=0
-            ICON_OK=0
-            
-            pkexec "${DESKTOP_SCRIPT}" || DESKTOP_OK=1
-            pkexec "${ICON_SCRIPT}" || ICON_OK=1
+            if ! pkexec "${SETUP_SCRIPT}"; then
+                zenity --error --title="Error" --text="Failed to create desktop shortcut and install icon."
+            fi
             
             # Clean up temp files
-            rm -f "${TEMP_ICON}" "${DESKTOP_SCRIPT}" "${ICON_SCRIPT}"
-            
-            if [ $DESKTOP_OK -eq 1 ] || [ $ICON_OK -eq 1 ]; then
-                if [ $DESKTOP_OK -eq 1 ]; then
-                    zenity --error --title="Error" --text="Failed to create desktop shortcut."
-                fi
-                if [ $ICON_OK -eq 1 ]; then
-                    if [ -f /tmp/icon_debug.log ]; then
-                        DEBUG_INFO="$(cat /tmp/icon_debug.log)"
-                        zenity --error --title="Error" --text="Failed to install application icon.\n\nDebug info:\n${DEBUG_INFO}"
-                        rm -f /tmp/icon_debug.log
-                    else
-                        zenity --error --title="Error" --text="Failed to install application icon."
-                    fi
-                fi
-            fi
+            rm -f "${TEMP_ICON}" "${SETUP_SCRIPT}"
         fi
     fi
 fi
