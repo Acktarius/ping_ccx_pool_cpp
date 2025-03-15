@@ -141,11 +141,18 @@ EOL
             # Create icon installation script
             cat > "${ICON_SCRIPT}" << EOL
 #!/bin/bash
-ICONS_DIR="/home/${REAL_USER}/.icons"
-mkdir -p $ICONS_DIR
-cp $APPDIR/usr/share/icons/hicolor/128x128/apps/PingCCXPool.png $ICONS_DIR/PingCCXPool.png
-chown -R "${REAL_USER}:" "${ICONS_DIR}"
-chmod 644 "${ICONS_DIR}/PingCCXPool.png"
+# $1: username
+# $2: icons directory
+# $3: appdir path
+if [ $# -ne 3 ]; then
+    echo "Usage: $0 USERNAME ICONS_DIR APPDIR_PATH"
+    exit 1
+fi
+
+mkdir -p "$2"
+cp "$3/PingCCXPool.png" "$2/PingCCXPool.png"
+chown -R "$1:$1" "$2"
+chmod 644 "$2/PingCCXPool.png"
 EOL
 
             chmod +x "${DESKTOP_SCRIPT}" "${ICON_SCRIPT}"
@@ -154,7 +161,7 @@ EOL
             ICON_OK=0
             
             pkexec "${DESKTOP_SCRIPT}" || DESKTOP_OK=1
-            pkexec "${ICON_SCRIPT}" || ICON_OK=1
+            pkexec "${ICON_SCRIPT}" "${REAL_USER}" "${ICONS_DIR}" "${APPDIR}" || ICON_OK=1
             
             if [ $DESKTOP_OK -eq 1 ] || [ $ICON_OK -eq 1 ]; then
                 if [ $DESKTOP_OK -eq 1 ]; then
