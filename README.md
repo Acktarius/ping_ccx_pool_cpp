@@ -163,9 +163,10 @@ The C++ version of PingCCXPool now supports integration with a Pears application
 
 ### Setting Up the Pears Integration
 
-1. Install Pears:
+1. Install and Setup Pears:
    ```bash
-   npm install -g @pearsproject/pear
+   npm i -g pear
+   pear
    ```
 
 2. Run the Pool Sync application directly from the Pears network:
