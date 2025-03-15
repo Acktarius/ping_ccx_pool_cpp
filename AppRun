@@ -103,7 +103,8 @@ if [ -n "$APPIMAGE" ]; then  # Only create desktop file if we're running as an A
             --cancel-label="No"; then
             
             # Create desktop file and copy icons in one pkexec session
-            SETUP_SCRIPT=$(mktemp)
+            DESKTOP_SCRIPT=$(mktemp)
+            ICON_SCRIPT=$(mktemp)
             
             # Get the real user before escalating privileges - try multiple methods
             if [ -n "${SUDO_USER}" ]; then
@@ -117,19 +118,13 @@ if [ -n "$APPIMAGE" ]; then  # Only create desktop file if we're running as an A
             # Verify we got a valid username
             if [ -z "${REAL_USER}" ]; then
                 zenity --error --title="Error" --text="Could not determine the current user."
-                rm "${SETUP_SCRIPT}"
+                rm -f "${DESKTOP_SCRIPT}" "${ICON_SCRIPT}"
                 exit 1
             fi
-            
-            cat > "${SETUP_SCRIPT}" << 'EOL'
+
+            # Create desktop file installation script
+            cat > "${DESKTOP_SCRIPT}" << EOL
 #!/bin/bash
-
-DESKTOP_FILE="$1"
-APPDIR="$2"
-APPIMAGE="$3"
-REAL_USER="$4"
-
-# Create desktop entry
 cat > "${DESKTOP_FILE}" << EOF
 [Desktop Entry]
 Type=Application
@@ -141,48 +136,24 @@ Categories=Network;Utility;
 Terminal=false
 EOF
 chmod 644 "${DESKTOP_FILE}"
-
-# Setup icons with error checking
-ICONS_DIR="/home/${REAL_USER}/.icons"
-ICON_SOURCE="${APPDIR}/usr/share/icons/hicolor/128x128/apps/PingCCXPool.png"
-ICON_TARGET="${ICONS_DIR}/PingCCXPool.png"
-
-# Check if source icon exists
-if [ ! -f "${ICON_SOURCE}" ]; then
-    zenity --error --title="Error" --text="Icon file not found at:\n${ICON_SOURCE}"
-    exit 1
-fi
-
-# Create icons directory
-if ! mkdir -p "${ICONS_DIR}"; then
-    zenity --error --title="Error" --text="Failed to create directory:\n${ICONS_DIR}"
-    exit 1
-fi
-
-# Copy icon file
-if ! cp "${ICON_SOURCE}" "${ICON_TARGET}"; then
-    zenity --error --title="Error" --text="Failed to copy icon to:\n${ICON_TARGET}"
-    exit 1
-fi
-
-# Set ownership
-if ! chown -R "${REAL_USER}:" "${ICONS_DIR}"; then
-    zenity --error --title="Error" --text="Failed to set ownership of:\n${ICONS_DIR}"
-    exit 1
-fi
-
-# Set permissions
-if ! chmod 644 "${ICON_TARGET}"; then
-    zenity --error --title="Error" --text="Failed to set permissions for:\n${ICON_TARGET}"
-    exit 1
-fi
 EOL
-            chmod +x "${SETUP_SCRIPT}"
+
+            # Create icon installation script
+            cat > "${ICON_SCRIPT}" << EOL
+#!/bin/bash
+ICONS_DIR="/home/${REAL_USER}/.icons"
+mkdir -p "${ICONS_DIR}"
+cp "${APPDIR}/usr/share/icons/hicolor/128x128/apps/PingCCXPool.png" "${ICONS_DIR}/PingCCXPool.png"
+chown -R "${REAL_USER}:" "${ICONS_DIR}"
+chmod 644 "${ICONS_DIR}/PingCCXPool.png"
+EOL
+
+            chmod +x "${DESKTOP_SCRIPT}" "${ICON_SCRIPT}"
             
-            if ! pkexec "${SETUP_SCRIPT}" "${DESKTOP_FILE}" "${APPDIR}" "${APPIMAGE}" "${REAL_USER}"; then
-                zenity --error --title="Error" --text="Failed to create desktop shortcut."
+            if ! pkexec "${DESKTOP_SCRIPT}" && pkexec "${ICON_SCRIPT}"; then
+                zenity --error --title="Error" --text="Failed to create desktop shortcut or install icon."
             fi
-            rm "${SETUP_SCRIPT}"
+            rm -f "${DESKTOP_SCRIPT}" "${ICON_SCRIPT}"
         fi
     fi
 fi
