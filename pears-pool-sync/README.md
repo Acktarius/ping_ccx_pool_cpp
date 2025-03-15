@@ -28,16 +28,20 @@ The PingCCXPool application will automatically check these locations for the poo
 
 1. Install Pears:
    ```bash
-   npm install -g @pearsproject/pear
+   npm i -g pear
+   ```
+2. Setup
+   ```
+   pear
    ```
 
-2. Add Pears to your PATH (if not already done):
+3. Add Pears to your PATH (if not already done):
    ```bash
    echo 'export PATH="$PATH:$HOME/.config/pear/bin"' >> ~/.bashrc
    source ~/.bashrc
    ```
 
-3. Run the application directly from the Pears network:
+4. Run the application directly from the Pears network:
    ```bash
    pear run pear://ejq6mirh68ffk4pxja6c6g8knwu6ekbzhbicwyx3cw5bbix89z9y --terminal
    ```

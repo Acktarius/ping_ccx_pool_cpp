@@ -190,4 +190,4 @@ The C++ version of PingCCXPool now supports integration with a Pears application
 - Add new pools as they come online without waiting for official updates
 - Completely optional - the main application works fine without it
 
-For more details, see the [PEARS_README.md](PEARS_README.md) file.
+For more details, see the [README.md](pears-pool-sync/README.mdREADME.md) file.
