@@ -122,6 +122,9 @@ if [ -n "$APPIMAGE" ]; then  # Only create desktop file if we're running as an A
                 exit 1
             fi
 
+            # Define icons directory
+            ICONS_DIR="/home/${REAL_USER}/.icons"
+
             # Create desktop file installation script
             cat > "${DESKTOP_SCRIPT}" << EOL
 #!/bin/bash
@@ -141,18 +144,17 @@ EOL
             # Create icon installation script
             cat > "${ICON_SCRIPT}" << EOL
 #!/bin/bash
-# $1: username
-# $2: icons directory
-# $3: appdir path
-if [ $# -ne 3 ]; then
-    echo "Usage: $0 USERNAME ICONS_DIR APPDIR_PATH"
-    exit 1
-fi
 
-mkdir -p "$2"
-cp "$3/PingCCXPool.png" "$2/PingCCXPool.png"
-chown -R "$1:$1" "$2"
-chmod 644 "$2/PingCCXPool.png"
+# Debug output
+echo "Debug info:" > /tmp/icon_debug.log
+echo "ICONS_DIR=${ICONS_DIR}" >> /tmp/icon_debug.log
+echo "APPDIR=${APPDIR}" >> /tmp/icon_debug.log
+echo "REAL_USER=${REAL_USER}" >> /tmp/icon_debug.log
+
+mkdir -p "${ICONS_DIR}"
+cp "${APPDIR}/PingCCXPool.png" "${ICONS_DIR}/PingCCXPool.png"
+chown -R "${REAL_USER}:${REAL_USER}" "${ICONS_DIR}"
+chmod 644 "${ICONS_DIR}/PingCCXPool.png"
 EOL
 
             chmod 755 "${DESKTOP_SCRIPT}" "${ICON_SCRIPT}"
@@ -161,14 +163,20 @@ EOL
             ICON_OK=0
             
             pkexec "${DESKTOP_SCRIPT}" || DESKTOP_OK=1
-            pkexec "${ICON_SCRIPT}" "${REAL_USER}" "${ICONS_DIR}" "${APPDIR}" || ICON_OK=1
+            pkexec "${ICON_SCRIPT}" || ICON_OK=1
             
             if [ $DESKTOP_OK -eq 1 ] || [ $ICON_OK -eq 1 ]; then
                 if [ $DESKTOP_OK -eq 1 ]; then
                     zenity --error --title="Error" --text="Failed to create desktop shortcut."
                 fi
                 if [ $ICON_OK -eq 1 ]; then
-                    zenity --error --title="Error" --text="Failed to install application icon."
+                    if [ -f /tmp/icon_debug.log ]; then
+                        DEBUG_INFO="$(cat /tmp/icon_debug.log)"
+                        zenity --error --title="Error" --text="Failed to install application icon.\n\nDebug info:\n${DEBUG_INFO}"
+                        rm -f /tmp/icon_debug.log
+                    else
+                        zenity --error --title="Error" --text="Failed to install application icon."
+                    fi
                 fi
             fi
             rm -f "${DESKTOP_SCRIPT}" "${ICON_SCRIPT}"
