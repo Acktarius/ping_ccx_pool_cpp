@@ -13,7 +13,15 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-22.04
+            wx_package: libwxgtk3.0-gtk3-dev
+          - os: ubuntu-24.04
+            wx_package: libwxgtk3.2-dev
+    
+    runs-on: ${{ matrix.os }}
     
     steps:
     - uses: actions/checkout@v4
@@ -22,7 +30,6 @@ jobs:
       id: get_version
       run: |
         if [[ $GITHUB_REF == refs/tags/* ]]; then
-          # Strip the 'v' prefix for CMake compatibility but keep it for filenames
           VERSION=${GITHUB_REF#refs/tags/v}
           echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
           echo "FILE_VERSION=v${VERSION}" >> $GITHUB_OUTPUT
@@ -34,7 +41,7 @@ jobs:
     - name: Install Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y build-essential cmake libwxgtk3.0-gtk3-dev nlohmann-json3-dev nmap
+        sudo apt-get install -y build-essential cmake ${{ matrix.wx_package }} nlohmann-json3-dev nmap
         
     - name: Create Build Directory
       run: mkdir build
@@ -91,23 +98,23 @@ jobs:
           --output appimage
         
         # Rename and create MD5
-        mv PingCCXPool*.AppImage PingCCXPool-${{ steps.get_version.outputs.FILE_VERSION }}-ubuntu22.04-x86_64.AppImage
-        md5sum PingCCXPool-${{ steps.get_version.outputs.FILE_VERSION }}-ubuntu22.04-x86_64.AppImage > PingCCXPool-${{ steps.get_version.outputs.FILE_VERSION }}-ubuntu22.04-x86_64.AppImage.md5
+        mv PingCCXPool*.AppImage PingCCXPool-${{ steps.get_version.outputs.FILE_VERSION }}-${{ matrix.os }}-x86_64.AppImage
+        md5sum PingCCXPool-${{ steps.get_version.outputs.FILE_VERSION }}-${{ matrix.os }}-x86_64.AppImage > PingCCXPool-${{ steps.get_version.outputs.FILE_VERSION }}-${{ matrix.os }}-x86_64.AppImage.md5
         
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: PingCCXPool-${{ steps.get_version.outputs.FILE_VERSION }}-ubuntu22.04-x86_64
+        name: PingCCXPool-${{ steps.get_version.outputs.FILE_VERSION }}-${{ matrix.os }}-x86_64
         path: |
-          build/PingCCXPool-${{ steps.get_version.outputs.FILE_VERSION }}-ubuntu22.04-x86_64.AppImage
-          build/PingCCXPool-${{ steps.get_version.outputs.FILE_VERSION }}-ubuntu22.04-x86_64.AppImage.md5
+          build/PingCCXPool-${{ steps.get_version.outputs.FILE_VERSION }}-${{ matrix.os }}-x86_64.AppImage
+          build/PingCCXPool-${{ steps.get_version.outputs.FILE_VERSION }}-${{ matrix.os }}-x86_64.AppImage.md5
         
     - name: Create Release
       if: startsWith(github.ref, 'refs/tags/')
       uses: softprops/action-gh-release@v1
       with:
         files: |
-          build/PingCCXPool-${{ steps.get_version.outputs.FILE_VERSION }}-ubuntu22.04-x86_64.AppImage
-          build/PingCCXPool-${{ steps.get_version.outputs.FILE_VERSION }}-ubuntu22.04-x86_64.AppImage.md5
+          build/PingCCXPool-${{ steps.get_version.outputs.FILE_VERSION }}-${{ matrix.os }}-x86_64.AppImage
+          build/PingCCXPool-${{ steps.get_version.outputs.FILE_VERSION }}-${{ matrix.os }}-x86_64.AppImage.md5
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
