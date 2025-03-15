@@ -157,33 +157,31 @@ The C++ version of PingCCXPool now supports integration with a Pears application
 
 ### How It Works
 
-1. The main application checks for a `pear-pools.json` file in `/usr/share/PingCCXPool/`
+1. The main application checks for a `pear-pools.json` file first
 2. If found, it uses this file which contains community-maintained pool information
 3. If not found, it falls back to the bundled `pools.json`
 
 ### Setting Up the Pears Integration
-
-The Pears integration is available as a separate project for better organization and maintenance:
 
 1. Install Pears:
    ```bash
    npm install -g @pearsproject/pear
    ```
 
-2. Get the Pool Sync application:
+2. Run the Pool Sync application directly from the Pears network:
    ```bash
-   git clone https://github.com/Acktarius/ping_ccx_pool_pears.git
-   cd ping_ccx_pool_pears
+   pear run pear://ejq6mirh68ffk4pxja6c6g8knwu6ekbzhbicwyx3cw5bbix89z9y
    ```
 
-3. Run the Pool Sync application:
+   Or from the local directory:
    ```bash
+   cd pears-pool-sync
    pear run --dev .
    ```
 
-4. Use the interface to add new pools or see pools shared by other users
+3. Use the interface to add new pools or see pools shared by other users
 
-5. Run the regular PingCCXPool application - it will automatically use the updated pools list from the system-wide location
+4. Run the regular PingCCXPool application - it will automatically use the updated pools list
 
 ### Benefits
 
@@ -191,6 +189,5 @@ The Pears integration is available as a separate project for better organization
 - Peer-to-peer sharing means no central server needed
 - Add new pools as they come online without waiting for official updates
 - Completely optional - the main application works fine without it
-- Properly organized in separate projects with a common data file
 
-For more details, see the [Pears Pool Sync Repository](https://github.com/Acktarius/ping_ccx_pool_pears).
+For more details, see the [PEARS_README.md](PEARS_README.md) file.

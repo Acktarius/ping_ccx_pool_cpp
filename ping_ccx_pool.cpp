@@ -10,6 +10,7 @@
 #include <wx/stdpaths.h>
 #include <wx/filename.h>
 #include <wx/textfile.h>
+#include <wx/utils.h> // For wxGetHomeDir
 #include <fstream>
 #include <nlohmann/json.hpp>
 #include <regex>
@@ -31,17 +32,14 @@ using json = nlohmann::json;
 void MainFrame::InitializePoolData() {
     poolsAndPorts.clear();
     
-    // Try to load pear-pools.json from system location, then fall back to bundled pools.json
-    wxString pearJsonFilePath = "/usr/share/PingCCXPool/pear-pools.json"; 
-    wxString defaultJsonFilePath = "pools.json";
-    wxString jsonFilePath;
+    // Check if pear-pools.json exists in user's home directory
+    const wxString homeDir = wxGetHomeDir();
+    const wxString pearJsonFilePath = homeDir + "/.local/share/PingCCXPool/pear-pools.json";
+    const wxString jsonFilePath = wxFileExists(pearJsonFilePath) ? pearJsonFilePath : "pools.json";
     
-    // Check if pear-pools.json exists and use it if available
-    if (wxFileExists(pearJsonFilePath)) {
-        jsonFilePath = pearJsonFilePath;
-        resultTextCtrl->AppendText("Using community-maintained pool data from system-wide location\n\n");
-    } else {
-        jsonFilePath = defaultJsonFilePath;
+    // Inform user if using community pools
+    if (jsonFilePath == pearJsonFilePath && resultTextCtrl) {
+        resultTextCtrl->AppendText("Using community-maintained pool data\n\n");
     }
     
     std::ifstream file(jsonFilePath.ToStdString());
