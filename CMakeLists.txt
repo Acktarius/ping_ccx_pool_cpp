@@ -88,7 +88,7 @@ if(NOT DEBIAN_BUILD_POS EQUAL -1)
     message(STATUS "Release-Debian build type detected, enabling GLIBC 2.31 compatibility")
 endif()
 
-# Apply GLIBC 2.31 compatibility settings if requested
+# Apply GLIBC 2.31 compatibility settings if requested (compiler and linker flags)
 if(GLIBC_2_31_COMPATIBILITY)
     message(STATUS "Building with GLIBC 2.31 compatibility for Debian systems")
     
@@ -98,26 +98,7 @@ if(GLIBC_2_31_COMPATIBILITY)
     # Force older GLIBC symbol versions
     add_compile_definitions(_FORTIFY_SOURCE=2)
     
-    # Check if patchelf is available for post-processing
-    find_program(PATCHELF_PROGRAM patchelf)
-    if(NOT PATCHELF_PROGRAM)
-        message(STATUS "patchelf not found. Will try to install it.")
-        # Add dependency on installing patchelf
-        list(APPEND MISSING_DEPENDENCIES patchelf)
-    endif()
-    
-    # Add post-build command to set GLIBC version
-    add_custom_command(
-        TARGET PingCCXPool
-        POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E echo "Setting GLIBC version to 2.31 for Debian compatibility"
-        COMMAND patchelf --set-interpreter /lib64/ld-linux-x86-64.so.2 $<TARGET_FILE:PingCCXPool>
-        COMMAND patchelf --replace-needed libc.so.6 libc.so.6 $<TARGET_FILE:PingCCXPool>
-        COMMAND patchelf --set-rpath ${CMAKE_INSTALL_PREFIX}/lib $<TARGET_FILE:PingCCXPool>
-        COMMENT "Setting GLIBC compatibility to 2.31"
-    )
-    
-    message(STATUS "GLIBC 2.31 compatibility mode enabled")
+    # The post-build patchelf commands will be applied after the target is defined
 endif()
 
 # Set output directory for the binary
@@ -176,6 +157,30 @@ if(MSVC)
     target_compile_options(PingCCXPool PRIVATE /W4)
 else()
     target_compile_options(PingCCXPool PRIVATE -Wall -Wextra -pedantic)
+endif()
+
+# Now add the post-build GLIBC compatibility steps after the target is defined
+if(GLIBC_2_31_COMPATIBILITY)
+    # Check if patchelf is available for post-processing
+    find_program(PATCHELF_PROGRAM patchelf)
+    if(NOT PATCHELF_PROGRAM)
+        message(STATUS "patchelf not found. Will try to install it.")
+        # Add dependency on installing patchelf
+        list(APPEND MISSING_DEPENDENCIES patchelf)
+    endif()
+    
+    # Add post-build command to set GLIBC version
+    add_custom_command(
+        TARGET PingCCXPool
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E echo "Setting GLIBC version to 2.31 for Debian compatibility"
+        COMMAND patchelf --set-interpreter /lib64/ld-linux-x86-64.so.2 $<TARGET_FILE:PingCCXPool>
+        COMMAND patchelf --replace-needed libc.so.6 libc.so.6 $<TARGET_FILE:PingCCXPool>
+        COMMAND patchelf --set-rpath ${CMAKE_INSTALL_PREFIX}/lib $<TARGET_FILE:PingCCXPool>
+        COMMENT "Setting GLIBC compatibility to 2.31"
+    )
+    
+    message(STATUS "GLIBC 2.31 compatibility mode enabled")
 endif()
 
 # Custom target for cleanup
