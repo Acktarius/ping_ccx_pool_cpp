@@ -76,21 +76,48 @@ endif()
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Option for GLIBC 2.31 compatibility (for Debian systems)
+option(GLIBC_2_31_COMPATIBILITY "Build with GLIBC 2.31 compatibility for Debian systems" OFF)
+
 # Check for Release-Debian build type for GLIBC 2.31 compatibility
 string(FIND "${CMAKE_BUILD_TYPE}" "Release-Debian" DEBIAN_BUILD_POS)
 if(NOT DEBIAN_BUILD_POS EQUAL -1)
-    message(STATUS "Building with Debian compatibility mode for GLIBC 2.31")
-    
-    # Force static linking of C++ standard libraries to avoid GLIBC version issues
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libgcc -static-libstdc++")
-    
-    # Set actual build type to Release (stripping Release-Debian prefix)
+    # If we're using the special build type, set the compatibility flag and switch to regular Release
+    set(GLIBC_2_31_COMPATIBILITY ON)
     set(CMAKE_BUILD_TYPE "Release")
+    message(STATUS "Release-Debian build type detected, enabling GLIBC 2.31 compatibility")
+endif()
+
+# Apply GLIBC 2.31 compatibility settings if requested
+if(GLIBC_2_31_COMPATIBILITY)
+    message(STATUS "Building with GLIBC 2.31 compatibility for Debian systems")
     
-    # Add compatibility flags for GLIBC 2.31
-    add_compile_options(-D_GLIBCXX_USE_CXX11_ABI=0)
-    add_compile_options(-U_FILE_OFFSET_BITS)  # Undefine and then redefine to avoid conflicts
-    add_compile_options(-D_FILE_OFFSET_BITS=64)
+    # Set link flags to create a binary compatible with GLIBC 2.31
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--wrap=memcpy")
+    
+    # Force older GLIBC symbol versions
+    add_compile_definitions(_FORTIFY_SOURCE=2)
+    
+    # Check if patchelf is available for post-processing
+    find_program(PATCHELF_PROGRAM patchelf)
+    if(NOT PATCHELF_PROGRAM)
+        message(STATUS "patchelf not found. Will try to install it.")
+        # Add dependency on installing patchelf
+        list(APPEND MISSING_DEPENDENCIES patchelf)
+    endif()
+    
+    # Add post-build command to set GLIBC version
+    add_custom_command(
+        TARGET PingCCXPool
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E echo "Setting GLIBC version to 2.31 for Debian compatibility"
+        COMMAND patchelf --set-interpreter /lib64/ld-linux-x86-64.so.2 $<TARGET_FILE:PingCCXPool>
+        COMMAND patchelf --replace-needed libc.so.6 libc.so.6 $<TARGET_FILE:PingCCXPool>
+        COMMAND patchelf --set-rpath ${CMAKE_INSTALL_PREFIX}/lib $<TARGET_FILE:PingCCXPool>
+        COMMENT "Setting GLIBC compatibility to 2.31"
+    )
+    
+    message(STATUS "GLIBC 2.31 compatibility mode enabled")
 endif()
 
 # Set output directory for the binary

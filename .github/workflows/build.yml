@@ -19,12 +19,15 @@ jobs:
           - os: ubuntu-22.04
             wx_package: libwxgtk3.0-gtk3-dev
             build_type: Release
+            glibc_compat: OFF
           - os: ubuntu-24.04
             wx_package: libwxgtk3.2-dev
             build_type: Release
+            glibc_compat: OFF
           - os: ubuntu-20.04  # Most similar to Debian 11 in terms of GLIBC version
             wx_package: libwxgtk3.0-gtk3-dev
-            build_type: Release-Debian
+            build_type: Release
+            glibc_compat: ON
     
     runs-on: ${{ matrix.os }}
     
@@ -47,13 +50,16 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y build-essential cmake ${{ matrix.wx_package }} nlohmann-json3-dev nmap
+        if [ "${{ matrix.glibc_compat }}" = "ON" ]; then
+          sudo apt-get install -y patchelf
+        fi
         
     - name: Create Build Directory
       run: mkdir build
       
     - name: Configure CMake
       working-directory: build
-      run: cmake .. -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DCMAKE_INSTALL_PREFIX=/usr
+      run: cmake .. -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DCMAKE_INSTALL_PREFIX=/usr -DGLIBC_2_31_COMPATIBILITY=${{ matrix.glibc_compat }}
       
     - name: Build and Install
       working-directory: build
