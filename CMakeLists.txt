@@ -76,6 +76,23 @@ endif()
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Check for Release-Debian build type for GLIBC 2.31 compatibility
+string(FIND "${CMAKE_BUILD_TYPE}" "Release-Debian" DEBIAN_BUILD_POS)
+if(NOT DEBIAN_BUILD_POS EQUAL -1)
+    message(STATUS "Building with Debian compatibility mode for GLIBC 2.31")
+    
+    # Force static linking of C++ standard libraries to avoid GLIBC version issues
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libgcc -static-libstdc++")
+    
+    # Set actual build type to Release (stripping Release-Debian prefix)
+    set(CMAKE_BUILD_TYPE "Release")
+    
+    # Add compatibility flags for GLIBC 2.31
+    add_compile_options(-D_GLIBCXX_USE_CXX11_ABI=0)
+    add_compile_options(-U_FILE_OFFSET_BITS)  # Undefine and then redefine to avoid conflicts
+    add_compile_options(-D_FILE_OFFSET_BITS=64)
+endif()
+
 # Set output directory for the binary
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 

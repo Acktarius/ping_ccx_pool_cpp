@@ -18,8 +18,13 @@ jobs:
         include:
           - os: ubuntu-22.04
             wx_package: libwxgtk3.0-gtk3-dev
+            build_type: Release
           - os: ubuntu-24.04
             wx_package: libwxgtk3.2-dev
+            build_type: Release
+          - os: ubuntu-20.04  # Most similar to Debian 11 in terms of GLIBC version
+            wx_package: libwxgtk3.0-gtk3-dev
+            build_type: Release-Debian
     
     runs-on: ${{ matrix.os }}
     
@@ -48,7 +53,7 @@ jobs:
       
     - name: Configure CMake
       working-directory: build
-      run: cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr
+      run: cmake .. -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DCMAKE_INSTALL_PREFIX=/usr
       
     - name: Build and Install
       working-directory: build
@@ -98,23 +103,23 @@ jobs:
           --output appimage
         
         # Rename and create MD5
-        mv PingCCXPool*.AppImage PingCCXPool-${{ steps.get_version.outputs.FILE_VERSION }}-${{ matrix.os }}-x86_64.AppImage
-        md5sum PingCCXPool-${{ steps.get_version.outputs.FILE_VERSION }}-${{ matrix.os }}-x86_64.AppImage > PingCCXPool-${{ steps.get_version.outputs.FILE_VERSION }}-${{ matrix.os }}-x86_64.AppImage.md5
+        mv PingCCXPool*.AppImage PingCCXPool-${{ steps.get_version.outputs.FILE_VERSION }}-${{ matrix.os }}-${{ matrix.build_type }}-x86_64.AppImage
+        md5sum PingCCXPool-${{ steps.get_version.outputs.FILE_VERSION }}-${{ matrix.os }}-${{ matrix.build_type }}-x86_64.AppImage > PingCCXPool-${{ steps.get_version.outputs.FILE_VERSION }}-${{ matrix.os }}-${{ matrix.build_type }}-x86_64.AppImage.md5
         
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: PingCCXPool-${{ steps.get_version.outputs.FILE_VERSION }}-${{ matrix.os }}-x86_64
+        name: PingCCXPool-${{ steps.get_version.outputs.FILE_VERSION }}-${{ matrix.os }}-${{ matrix.build_type }}-x86_64
         path: |
-          build/PingCCXPool-${{ steps.get_version.outputs.FILE_VERSION }}-${{ matrix.os }}-x86_64.AppImage
-          build/PingCCXPool-${{ steps.get_version.outputs.FILE_VERSION }}-${{ matrix.os }}-x86_64.AppImage.md5
+          build/PingCCXPool-${{ steps.get_version.outputs.FILE_VERSION }}-${{ matrix.os }}-${{ matrix.build_type }}-x86_64.AppImage
+          build/PingCCXPool-${{ steps.get_version.outputs.FILE_VERSION }}-${{ matrix.os }}-${{ matrix.build_type }}-x86_64.AppImage.md5
         
     - name: Create Release
       if: startsWith(github.ref, 'refs/tags/')
       uses: softprops/action-gh-release@v1
       with:
         files: |
-          build/PingCCXPool-${{ steps.get_version.outputs.FILE_VERSION }}-${{ matrix.os }}-x86_64.AppImage
-          build/PingCCXPool-${{ steps.get_version.outputs.FILE_VERSION }}-${{ matrix.os }}-x86_64.AppImage.md5
+          build/PingCCXPool-${{ steps.get_version.outputs.FILE_VERSION }}-${{ matrix.os }}-${{ matrix.build_type }}-x86_64.AppImage
+          build/PingCCXPool-${{ steps.get_version.outputs.FILE_VERSION }}-${{ matrix.os }}-${{ matrix.build_type }}-x86_64.AppImage.md5
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
