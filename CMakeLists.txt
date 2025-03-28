@@ -92,9 +92,6 @@ endif()
 if(GLIBC_2_31_COMPATIBILITY)
     message(STATUS "Building with GLIBC 2.31 compatibility for Debian systems")
     
-    # Set link flags to create a binary compatible with GLIBC 2.31
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--wrap=memcpy")
-    
     # Force older GLIBC symbol versions
     add_compile_definitions(_FORTIFY_SOURCE=2)
     
@@ -174,9 +171,9 @@ if(GLIBC_2_31_COMPATIBILITY)
         TARGET PingCCXPool
         POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E echo "Setting GLIBC version to 2.31 for Debian compatibility"
-        COMMAND patchelf --set-interpreter /lib64/ld-linux-x86-64.so.2 $<TARGET_FILE:PingCCXPool>
-        COMMAND patchelf --replace-needed libc.so.6 libc.so.6 $<TARGET_FILE:PingCCXPool>
-        COMMAND patchelf --set-rpath ${CMAKE_INSTALL_PREFIX}/lib $<TARGET_FILE:PingCCXPool>
+        # Use safer patching approach
+        COMMAND patchelf --set-interpreter /lib/x86_64-linux-gnu/ld-linux-x86-64.so.2 $<TARGET_FILE:PingCCXPool> || echo "Warning: Could not set interpreter path, but build will continue"
+        COMMAND patchelf --set-rpath ${CMAKE_INSTALL_PREFIX}/lib $<TARGET_FILE:PingCCXPool> || echo "Warning: Could not set rpath, but build will continue"
         COMMENT "Setting GLIBC compatibility to 2.31"
     )
     
